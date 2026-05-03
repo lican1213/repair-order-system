@@ -15,3 +15,19 @@ export async function getMe(): Promise<User> {
 export function logout(): void {
   localStorage.removeItem('token')
 }
+
+export interface ChangePasswordRequest {
+  old_password: string
+  new_password: string
+  confirm_password: string
+}
+
+export async function changePassword(
+  data: ChangePasswordRequest,
+): Promise<{ message: string }> {
+  const res = await client.post<{ message: string }>(
+    '/api/auth/change-password',
+    data,
+  )
+  return res.data
+}

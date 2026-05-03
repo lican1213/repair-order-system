@@ -4,7 +4,9 @@ export async function copyText(text: string): Promise<boolean> {
       await navigator.clipboard.writeText(text)
       return true
     }
-  } catch {}
+  } catch {
+    // clipboard API not available; fall through to execCommand
+  }
 
   try {
     const textarea = document.createElement('textarea')

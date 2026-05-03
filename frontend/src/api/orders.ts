@@ -4,8 +4,10 @@ import type { Order, OrderListResponse, DashboardSummary, OrderUpdateRequest } f
 interface OrderListParams {
   status?: string
   followup_status?: string
-  created_date?: string
-  scheduled_date?: string
+  created_date_start?: string
+  created_date_end?: string
+  scheduled_date_start?: string
+  scheduled_date_end?: string
   keyword?: string
   page?: number
   page_size?: number
@@ -44,8 +46,10 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
 interface ExportParams {
   status?: string
   followup_status?: string
-  created_date?: string
-  scheduled_date?: string
+  created_date_start?: string
+  created_date_end?: string
+  scheduled_date_start?: string
+  scheduled_date_end?: string
   keyword?: string
 }
 

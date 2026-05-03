@@ -52,15 +52,22 @@ def _format_cell(value):
 def export_orders(
     status_filter: str | None = Query(None, alias="status"),
     followup_status: str | None = None,
-    created_date: str | None = None,
-    scheduled_date: str | None = None,
+    created_date_start: str | None = None,
+    created_date_end: str | None = None,
+    scheduled_date_start: str | None = None,
+    scheduled_date_end: str | None = None,
     keyword: str | None = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """导出订单 Excel（需 JWT）。"""
     query = db.query(Order)
-    query = apply_order_filters(query, status_filter, followup_status, created_date, scheduled_date, keyword)
+    query = apply_order_filters(
+        query, status_filter, followup_status,
+        created_date_start, created_date_end,
+        scheduled_date_start, scheduled_date_end,
+        keyword,
+    )
     orders = query.order_by(Order.created_at.desc()).all()
 
     # 创建 Excel

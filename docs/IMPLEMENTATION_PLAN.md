@@ -216,7 +216,7 @@ cat repair-order-system/CLAUDE.md | head -20
   - 启动时创建数据目录
   - CORS 中间件（开发环境）
 
-- [ ] **Task 1.8：实现 /api/health**
+- [x] **Task 1.8：实现 /api/health**
 
   **Files:**
   - Modify: `backend/app/main.py` 或 Create: `backend/app/routers/health.py`
@@ -1179,13 +1179,12 @@ python -m uvicorn app.main:app --port 8000
 
 ## 后续 TODO（v1.1+）
 
-- [ ] 登录失败限频持久化（写入数据库）
-- [ ] 临时图片清理脚本（清理 7 天未绑定订单的 temp 图片）
-- [ ] 备份脚本 `scripts/backup.py`
-- [ ] 修改密码功能
-- [ ] 店铺信息编辑
+**v1.1（稳定性优先）：**
+- [ ] 备份脚本 `scripts/backup.py`（repair.db + uploads/）
+- [ ] 临时图片清理脚本（uploads/orders/temp/ 下超过 7 天未绑定订单的图片）
+- [ ] 登录失败限频持久化（写入数据库，重启不清空）
+- [ ] 修改密码功能（/admin/profile 页面）
+
+**v1.2：**
+- [ ] 店铺信息编辑（名称、电话，从 .env 迁移到数据库）
 - [ ] 保修二维码生成与下载
-- [ ] 微信小程序版本
-- [ ] 多员工支持
-- [ ] 简单库存管理
-- [ ] 数据统计图表

@@ -78,8 +78,9 @@ def health():
 
 
 # 认证路由
-from app.routers import auth
+from app.routers import auth, password
 app.include_router(auth.router, prefix="/api/auth", tags=["认证"])
+app.include_router(password.router, prefix="/api/auth", tags=["认证"])
 
 # 公开接口（无需登录）
 from app.routers import public, warranty

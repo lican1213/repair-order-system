@@ -14,8 +14,10 @@ def apply_order_filters(
     query: Query,
     status_filter: str | None = None,
     followup_status: str | None = None,
-    created_date: str | None = None,
-    scheduled_date: str | None = None,
+    created_date_start: str | None = None,
+    created_date_end: str | None = None,
+    scheduled_date_start: str | None = None,
+    scheduled_date_end: str | None = None,
     keyword: str | None = None,
 ) -> Query:
     """对订单查询应用筛选条件，返回新的 Query。"""
@@ -37,20 +39,28 @@ def apply_order_filters(
             )
         query = query.filter(Order.followup_status == followup_status)
 
-    if created_date:
+    if created_date_start or created_date_end:
         try:
-            d = date.fromisoformat(created_date)
-            query = query.filter(func.date(Order.created_at) == d)
+            if created_date_start:
+                d_start = date.fromisoformat(created_date_start)
+                query = query.filter(func.date(Order.created_at) >= d_start)
+            if created_date_end:
+                d_end = date.fromisoformat(created_date_end)
+                query = query.filter(func.date(Order.created_at) <= d_end)
         except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="日期格式错误，请使用 YYYY-MM-DD",
             )
 
-    if scheduled_date:
+    if scheduled_date_start or scheduled_date_end:
         try:
-            d = date.fromisoformat(scheduled_date)
-            query = query.filter(func.date(Order.scheduled_at) == d)
+            if scheduled_date_start:
+                d_start = date.fromisoformat(scheduled_date_start)
+                query = query.filter(func.date(Order.scheduled_at) >= d_start)
+            if scheduled_date_end:
+                d_end = date.fromisoformat(scheduled_date_end)
+                query = query.filter(func.date(Order.scheduled_at) <= d_end)
         except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

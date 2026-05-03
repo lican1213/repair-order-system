@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Button from '../components/Button'
 import ImagePreviewModal from '../components/ImagePreviewModal'
@@ -25,8 +25,7 @@ export default function OrderDetail() {
 
   const [form, setForm] = useState<OrderUpdateRequest>({})
 
-  // 字段级日期错误
-  const [dateErrors, setDateErrors] = useState<Record<string, string>>({})
+  // 字段级日期错误（useMemo 派生，见下方）
 
   useEffect(() => {
     if (!id) return
@@ -49,8 +48,8 @@ export default function OrderDetail() {
       .finally(() => setLoading(false))
   }, [id])
 
-  // 实时校验日期字段
-  useEffect(() => {
+  // 实时校验日期字段（纯派生，用 useMemo）
+  const dateErrors = useMemo<Record<string, string>>(() => {
     const errs: Record<string, string> = {}
     if (form.scheduled_at && isPastDateTime(form.scheduled_at)) {
       errs.scheduled_at = '预约时间不能早于当前时间'
@@ -63,7 +62,7 @@ export default function OrderDetail() {
       form.completed_at as unknown as string || order?.completed_at
     )
     if (warrantyErr) errs.warranty_until = warrantyErr
-    setDateErrors(errs)
+    return errs
   }, [form.scheduled_at, form.completed_at, form.warranty_until, order?.completed_at])
 
   const update = (field: string, value: string | number | undefined) => {

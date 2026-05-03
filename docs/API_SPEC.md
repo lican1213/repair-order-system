@@ -25,18 +25,20 @@
 - 单次最多：5 张
 - 文件名后端随机生成
 
-**请求：** `multipart/form-data`，字段 `file`
+**请求：** `multipart/form-data`，字段 `files`（支持多文件）
 
 **响应：**
 ```json
 {
-  "path": "/uploads/orders/temp/abc123.webp"
+  "paths": ["/uploads/orders/temp/abc123.webp"]
 }
 ```
 
 **错误：**
+- 400: 文件数量超限
 - 413: 文件过大
 - 415: 文件类型不支持
+- 429: 请求过于频繁（10 次/分钟/IP）
 
 ---
 
@@ -173,6 +175,40 @@
 
 ---
 
+### POST /api/auth/change-password
+
+修改密码。需要 JWT。
+
+**Header:** `Authorization: Bearer <token>`
+
+**请求：**
+```json
+{
+  "old_password": "当前密码",
+  "new_password": "新密码",
+  "confirm_password": "确认新密码"
+}
+```
+
+**校验规则：**
+- `new_password` 最少 6 位
+- `new_password` 必须等于 `confirm_password`
+- `new_password` 不能与 `old_password` 相同
+
+**响应：**
+```json
+{
+  "message": "密码修改成功，请重新登录"
+}
+```
+
+**错误：**
+- 400: 新密码与旧密码相同
+- 401: 旧密码错误
+- 422: 新密码少于 6 位，或新密码与确认密码不一致
+
+---
+
 ## 订单管理接口（需登录）
 
 所有接口需要 `Authorization: Bearer <token>`。
@@ -259,12 +295,12 @@
 
 后台上传维修照片。需 JWT。
 
-**请求：** `multipart/form-data`，字段 `file`
+**请求：** `multipart/form-data`，字段 `files`（支持多文件）
 
 **响应：**
 ```json
 {
-  "path": "/uploads/orders/abc123.webp"
+  "paths": ["/uploads/orders/abc123.webp"]
 }
 ```
 

@@ -21,8 +21,10 @@ export default function OrderList() {
   const statusFilter = searchParams.get('status') || ''
   const followupFilter = searchParams.get('followup_status') || ''
   const keyword = searchParams.get('keyword') || ''
-  const createdDate = searchParams.get('created_date') || ''
-  const scheduledDate = searchParams.get('scheduled_date') || ''
+  const createdDateStart = searchParams.get('created_date_start') || ''
+  const createdDateEnd = searchParams.get('created_date_end') || ''
+  const scheduledDateStart = searchParams.get('scheduled_date_start') || ''
+  const scheduledDateEnd = searchParams.get('scheduled_date_end') || ''
 
   useEffect(() => {
     let cancelled = false
@@ -31,8 +33,10 @@ export default function OrderList() {
       status: statusFilter || undefined,
       followup_status: followupFilter || undefined,
       keyword: keyword || undefined,
-      created_date: createdDate || undefined,
-      scheduled_date: scheduledDate || undefined,
+      created_date_start: createdDateStart || undefined,
+      created_date_end: createdDateEnd || undefined,
+      scheduled_date_start: scheduledDateStart || undefined,
+      scheduled_date_end: scheduledDateEnd || undefined,
       page: 1,
       page_size: 20,
     })
@@ -56,7 +60,7 @@ export default function OrderList() {
     return () => {
       cancelled = true
     }
-  }, [statusFilter, followupFilter, keyword, createdDate, scheduledDate])
+  }, [statusFilter, followupFilter, keyword, createdDateStart, createdDateEnd, scheduledDateStart, scheduledDateEnd])
 
   const loadMore = async () => {
     setLoading(true)
@@ -65,8 +69,10 @@ export default function OrderList() {
         status: statusFilter || undefined,
         followup_status: followupFilter || undefined,
         keyword: keyword || undefined,
-        created_date: createdDate || undefined,
-        scheduled_date: scheduledDate || undefined,
+        created_date_start: createdDateStart || undefined,
+        created_date_end: createdDateEnd || undefined,
+        scheduled_date_start: scheduledDateStart || undefined,
+        scheduled_date_end: scheduledDateEnd || undefined,
         page: page + 1,
         page_size: 20,
       })
@@ -98,8 +104,10 @@ export default function OrderList() {
         status: statusFilter || undefined,
         followup_status: followupFilter || undefined,
         keyword: keyword || undefined,
-        created_date: createdDate || undefined,
-        scheduled_date: scheduledDate || undefined,
+        created_date_start: createdDateStart || undefined,
+        created_date_end: createdDateEnd || undefined,
+        scheduled_date_start: scheduledDateStart || undefined,
+        scheduled_date_end: scheduledDateEnd || undefined,
       })
       const now = new Date()
       const filename = `orders_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}.xlsx`
@@ -151,21 +159,43 @@ export default function OrderList() {
             className="min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm"
           />
 
-          <div className="flex gap-2">
-            <input
-              type="date"
-              value={createdDate}
-              onChange={(e) => updateParam('created_date', e.target.value)}
-              className="flex-1 min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm"
-              placeholder="创建日期"
-            />
-            <input
-              type="date"
-              value={scheduledDate}
-              onChange={(e) => updateParam('scheduled_date', e.target.value)}
-              className="flex-1 min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm"
-              placeholder="预约日期"
-            />
+          <div className="space-y-2">
+            <div className="flex gap-2 items-center">
+              <span className="text-xs text-gray-400 w-14 shrink-0">创建日期</span>
+              <input
+                type="date"
+                value={createdDateStart}
+                onChange={(e) => updateParam('created_date_start', e.target.value)}
+                className="flex-1 min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                placeholder="开始"
+              />
+              <span className="text-gray-400">-</span>
+              <input
+                type="date"
+                value={createdDateEnd}
+                onChange={(e) => updateParam('created_date_end', e.target.value)}
+                className="flex-1 min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                placeholder="结束"
+              />
+            </div>
+            <div className="flex gap-2 items-center">
+              <span className="text-xs text-gray-400 w-14 shrink-0">预约日期</span>
+              <input
+                type="date"
+                value={scheduledDateStart}
+                onChange={(e) => updateParam('scheduled_date_start', e.target.value)}
+                className="flex-1 min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                placeholder="开始"
+              />
+              <span className="text-gray-400">-</span>
+              <input
+                type="date"
+                value={scheduledDateEnd}
+                onChange={(e) => updateParam('scheduled_date_end', e.target.value)}
+                className="flex-1 min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                placeholder="结束"
+              />
+            </div>
           </div>
         </div>
 

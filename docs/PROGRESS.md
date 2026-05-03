@@ -2,19 +2,19 @@
 
 ## 当前状态
 
-**v1.0 开发完成** — 全部 12 个 Phase 通过。
+**v1.1 开发完成** — 2026-05-03。
 
-Codex 独立审计结论：**PASS_WITH_FIXES**。v1.0 audit fixes 已完成。
+v1.0 全部 12 个 Phase 通过。Codex 独立审计结论：**PASS_WITH_FIXES**，audit fixes 已通过 Codex 复审（**PASS**）。Mobile Hotfix 七轮已完成。v1.1 四项增强全部实现并通过回归测试（14/14 端点 PASS）。详细计划见 `docs/V1_1_PLAN.md`。
 
-**Mobile Hotfix 已完成** — 6 个真机问题已修复，可再次进入手机真机试用。
-
-**Mobile Hotfix 第二轮已完成** — 手机号即时校验 + 希望上门时间改为日期+时间段选择。
-
-**Mobile Hotfix 第三轮已完成** — 所有日期不能选过去 + 家电类型"其他"引导填写。
-
-**Mobile Hotfix 第四轮已完成** — 日期时间不能早于当前时点 + 保修凭证只在订单完成后触发。
-
-**Mobile Hotfix 第五轮已完成** — 修复客户上传图片后台不显示问题。
+| 轮次 | 修复内容 | 日期 |
+|------|---------|------|
+| 第一轮 | 6 个真机问题（手机号校验、称呼、定位、保修链接、复制地址、复制保修链接） | 2026-05-03 |
+| 第二轮 | 手机号即时校验 + 希望上门时间改为日期+时间段选择 | 2026-05-03 |
+| 第三轮 | 所有日期不能选过去 + 家电类型"其他"引导填写 | 2026-05-03 |
+| 第四轮 | 日期时间不能早于当前时点 + 保修凭证只在订单完成后触发 | 2026-05-03 |
+| 第五轮 | 修复客户上传图片后台不显示问题 | 2026-05-03 |
+| 第六轮 | 图片弹层预览 + Excel 导出入口 | 2026-05-03 |
+| 第七轮 | 浏览器标题修正为"家电维修工单系统" | 2026-05-03 |
 
 ## Phase 进度
 
@@ -61,3 +61,35 @@ Codex 独立审计结论：**PASS_WITH_FIXES**。v1.0 audit fixes 已完成。
 | CLAUDE.md progress conflict | 完成 | 已删除冲突旧进度表 |
 | docs archive path | 完成 | 实施计划和设计文档已归档到项目内 docs |
 | standard port smoke test | 完成 | 使用 8000 + 5173 完成后端 API、前端 HTTP 和浏览器 smoke test |
+
+## v1.1 进度
+
+| Phase | 状态 | 日期 | 说明 |
+|-------|------|------|------|
+| Phase 1 备份脚本 | 完成 | 2026-05-03 | `scripts/backup.py` + `.gitignore` |
+| Phase 2 临时图片清理 | 完成 | 2026-05-03 | `scripts/cleanup_temp_images.py` |
+| Phase 3 公开接口限频 | 完成 | 2026-05-03 | `rate_limit.py` + 修改 `public.py` |
+| Phase 4 修改密码 | 完成 | 2026-05-03 | `password.py` + 修改 `schemas.py`/`main.py`/`auth.ts`/`AdminProfile.tsx` |
+| Phase 5 回归测试与文档 | 完成 | 2026-05-03 | 14/14 端点 PASS + 7 个文档同步 |
+
+## v1.1 最终验收结果
+
+| 测试项 | 结果 | 日期 |
+|--------|------|------|
+| GET /api/health | PASS | 2026-05-03 |
+| GET /api/public/shop-info | PASS | 2026-05-03 |
+| POST /api/auth/login (valid) | PASS | 2026-05-03 |
+| POST /api/auth/login (wrong) | PASS | 2026-05-03 |
+| POST /api/public/upload | PASS | 2026-05-03 |
+| POST /api/public/submit | PASS | 2026-05-03 |
+| GET /api/orders (authed) | PASS | 2026-05-03 |
+| GET /api/orders (no auth) | PASS | 2026-05-03 |
+| GET /api/export/orders | PASS | 2026-05-03 |
+| POST /api/auth/change-password (401) | PASS | 2026-05-03 |
+| POST /api/auth/change-password (422) | PASS | 2026-05-03 |
+| POST /api/auth/change-password (200) | PASS | 2026-05-03 |
+| Upload rate limit (10/min → 429) | PASS | 2026-05-03 |
+| Submit rate limit (5/min → 429) | PASS | 2026-05-03 |
+| scripts/backup.py | PASS | 2026-05-03 |
+| scripts/cleanup_temp_images.py --dry-run | PASS | 2026-05-03 |
+| npm run build | PASS | 2026-05-03 |

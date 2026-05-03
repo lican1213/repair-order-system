@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../components/Button'
 import Input from '../components/Input'
@@ -44,27 +44,19 @@ export default function RepairForm() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const fieldRefs = useRef<Record<string, HTMLElement | null>>({})
 
-  // 日期/时间段实时错误
-  const [dateError, setDateError] = useState('')
-  const [slotError, setSlotError] = useState('')
+  // 日期/时间段实时错误（useMemo 派生，见下方）
 
-  // 实时校验日期和时间段
-  useEffect(() => {
-    if (preferredDate && isPastDate(preferredDate)) {
-      setDateError('不能选择过去日期')
-    } else {
-      setDateError('')
-    }
+  // 实时校验日期和时间段（纯派生，用 useMemo）
+  const dateError = useMemo(() => {
+    if (preferredDate && isPastDate(preferredDate)) return '不能选择过去日期'
+    return ''
   }, [preferredDate])
 
-  useEffect(() => {
-    if (preferredSlot && preferredDate && isPastPreferredSlot(preferredDate, preferredSlot)) {
-      setSlotError('不能选择已经过去的时间段')
-    } else if (preferredSlot && !preferredDate) {
-      setSlotError('请先选择日期')
-    } else {
-      setSlotError('')
-    }
+  const slotError = useMemo(() => {
+    if (preferredSlot && preferredDate && isPastPreferredSlot(preferredDate, preferredSlot))
+      return '不能选择已经过去的时间段'
+    if (preferredSlot && !preferredDate) return '请先选择日期'
+    return ''
   }, [preferredDate, preferredSlot])
 
   const update = (field: string, value: string | boolean) => {

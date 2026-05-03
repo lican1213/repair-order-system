@@ -3,15 +3,14 @@ import secrets
 import shutil
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, Request, UploadFile, status
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.config import settings, BASE_DIR
-from app.database import get_db
-from fastapi import Depends
-
 from app.constants import APPLIANCE_TYPES
+from app.database import get_db
 from app.models import Order
+from app.rate_limit import limiter
 from app.schemas import (
     PublicUploadResponse,
     RepairSubmitRequest,
@@ -28,6 +27,22 @@ ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
 MAX_FILE_SIZE = settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024  # 5MB
 MAX_FILES = settings.PUBLIC_UPLOAD_MAX_FILES  # 5
 
+# 限频常量
+UPLOAD_IP_LIMIT = 10        # 次
+UPLOAD_IP_WINDOW = 60       # 秒 (1 分钟)
+SUBMIT_IP_LIMIT = 5         # 次
+SUBMIT_IP_WINDOW = 60       # 秒 (1 分钟)
+SUBMIT_PHONE_LIMIT = 3      # 次
+SUBMIT_PHONE_WINDOW = 600   # 秒 (10 分钟)
+
+
+def _get_client_ip(request: Request) -> str:
+    """Extract client IP, preferring X-Forwarded-For (reverse proxy)."""
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
 
 @router.get("/shop-info", response_model=ShopInfoResponse)
 def get_shop_info():
@@ -39,8 +54,16 @@ def get_shop_info():
 
 
 @router.post("/upload", response_model=PublicUploadResponse)
-async def upload_images(files: list[UploadFile]):
+async def upload_images(files: list[UploadFile], request: Request):
     """客户上传故障照片（无需登录）。"""
+    # Rate limit: 10 uploads per IP per minute
+    client_ip = _get_client_ip(request)
+    if not limiter.check(f"upload:ip:{client_ip}", UPLOAD_IP_LIMIT, UPLOAD_IP_WINDOW):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="请求过于频繁，请稍后再试",
+        )
+
     if len(files) > MAX_FILES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -89,8 +112,21 @@ async def upload_images(files: list[UploadFile]):
 
 
 @router.post("/submit", response_model=RepairSubmitResponse)
-def submit_repair(req: RepairSubmitRequest, db: Session = Depends(get_db)):
+def submit_repair(req: RepairSubmitRequest, request: Request, db: Session = Depends(get_db)):
     """客户提交报修（无需登录）。"""
+    # Rate limit: 5 per IP per minute + 3 per phone per 10 minutes
+    client_ip = _get_client_ip(request)
+    if not limiter.check(f"submit:ip:{client_ip}", SUBMIT_IP_LIMIT, SUBMIT_IP_WINDOW):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="请求过于频繁，请稍后再试",
+        )
+    if not limiter.check(f"submit:phone:{req.phone}", SUBMIT_PHONE_LIMIT, SUBMIT_PHONE_WINDOW):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="请求过于频繁，请稍后再试",
+        )
+
     # 校验家电类型
     if req.appliance_type not in APPLIANCE_TYPES:
         raise HTTPException(

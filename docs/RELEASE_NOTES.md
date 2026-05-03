@@ -42,26 +42,96 @@
 - 移动端布局
 - SPA 刷新
 
+### Audit Fixes（2026-05-03）
+
+Codex 独立审计结论 **PASS_WITH_FIXES**，8 项修复已完成并通过复审（**PASS**）：
+
+- `/uploads` fresh deploy 首次启动挂载
+- `image_paths` 统一使用 JSON 数组字符串存储
+- `npm run lint` 修复
+- `bcrypt` 直接声明为依赖
+- `/admin/profile` 店铺信息从后端 `.env` 读取
+- `CLAUDE.md` 冲突进度表清理
+- 实施计划和设计文档归档到项目内 `docs/`
+- 标准端口 smoke test 通过
+
+### Mobile Hotfix（2026-05-03，七轮）
+
+真机试用前修复，共七轮：
+
+| 轮次 | 修复内容 |
+|------|---------|
+| 1 | 手机号校验、称呼支持、定位功能、保修链接、复制地址、复制保修链接 |
+| 2 | 手机号即时校验、日期+时间段选择 |
+| 3 | 日期不能选过去、家电类型"其他"引导 |
+| 4 | 日期时间不能早于当前时点、保修凭证仅完成后触发 |
+| 5 | 客户上传图片后台显示 |
+| 6 | 图片弹层预览、Excel 导出入口 |
+| 7 | 浏览器标题修正为"家电维修工单系统" |
+
 ### 已知限制
 
 - 登录失败锁定使用内存存储，服务重启后清空
 - SQLite 适合小店场景，不适合高并发
-- 图片临时目录清理脚本暂未实现
-- 店铺信息编辑暂未实现
-- 保修二维码下载暂未实现
-- 微信小程序暂未实现
+- 公开上传只校验 MIME type 和扩展名，未校验真实图片内容
 
 ### 下一版本计划
 
-**v1.1：**
-- 登录失败限频持久化
-- 临时图片清理
-- 备份脚本
+**v1.1（稳定性优先）：** ✅ 已完成（2026-05-03），见下方
 
 **v1.2：**
-- 修改密码
 - 店铺信息编辑
 - 保修二维码生成与下载
 
-**v1.3：**
-- 微信小程序版本
+---
+
+## v1.1 (2026-05-03)
+
+稳定性、安全、备份和轻量维护增强。
+
+### 新增功能
+
+**备份脚本：**
+- `scripts/backup.py` 一键备份数据库和图片
+- 支持 `--zip` 压缩、`--keep N` 保留份数
+- 备份前检查磁盘空间和源路径
+
+**临时图片清理：**
+- `scripts/cleanup_temp_images.py` 清理 temp 目录过期文件
+- 只清理 7 天以上的临时图片（可自定义天数）
+- `--dry-run` 模式只预览不删除
+- 安全边界：绝不触碰正式订单图片
+
+**公开接口限频：**
+- `/api/public/upload`：10 次/分钟/IP
+- `/api/public/submit`：5 次/分钟/IP + 3 次/10 分钟/手机号
+- 内存滑动窗口实现，无外部依赖
+
+**修改密码：**
+- `/admin/profile` 页面可修改管理员密码
+- 旧密码验证 + bcrypt 更新
+- 修改成功后强制退出登录
+
+### 已知限制
+
+- 公开接口限频数据存内存，服务重启后清空
+- 修改密码后旧 JWT Token 在 30 天有效期内仍可用
+
+### 测试结果
+
+14/14 端点 PASS，`npm run build` PASS，`npm run lint` 无新增错误。
+
+### 文件变更
+
+| 操作 | 文件 |
+|------|------|
+| 新建 | `scripts/backup.py` |
+| 新建 | `scripts/cleanup_temp_images.py` |
+| 新建 | `backend/app/rate_limit.py` |
+| 新建 | `backend/app/routers/password.py` |
+| 修改 | `.gitignore`（添加 `backups/`） |
+| 修改 | `backend/app/routers/public.py`（限频） |
+| 修改 | `backend/app/main.py`（注册路由） |
+| 修改 | `backend/app/schemas.py`（ChangePasswordRequest） |
+| 修改 | `frontend/src/api/auth.ts`（changePassword API） |
+| 修改 | `frontend/src/pages/AdminProfile.tsx`（修改密码 UI） |

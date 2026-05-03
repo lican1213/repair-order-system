@@ -27,26 +27,24 @@
 
 ```
 repair-order-system/
-├── AGENTS.md
-├── README.md
-├── .gitignore
+├── CLAUDE.md, AGENTS.md, README.md, .gitignore
 ├── backend/
 │   ├── app/
 │   │   ├── main.py, config.py, database.py, models.py
-│   │   ├── schemas.py, auth.py, constants.py
-│   │   ├── routers/ (auth, public, orders, upload, export, warranty)
+│   │   ├── schemas.py, auth.py, constants.py, rate_limit.py
+│   │   ├── routers/ (auth, public, orders, upload, export, warranty, password)
 │   │   └── static/ (React build output)
 │   ├── data/ (SQLite)
-│   ├── uploads/ (orders/, warranty/)
+│   ├── uploads/ (orders/, orders/temp/, warranty/)
 │   ├── seed.py, requirements.txt, .env.example
 ├── frontend/
 │   ├── src/ (api/, pages/, components/, hooks/, routes/, types/, utils/)
 │   ├── vite.config.ts, package.json, tsconfig.json
-├── docs/
-│   ├── PRD.md, API_SPEC.md, DB_SCHEMA.md
-│   ├── PROGRESS.md, TODO.md, DECISIONS.md
-│   └── superpowers/specs/
-└── scripts/
+├── scripts/
+│   ├── backup.py (一键备份 db + uploads)
+│   └── cleanup_temp_images.py (清理过期临时图片)
+├── backups/ (gitignored)
+└── docs/
 ```
 
 ## 开发启动
@@ -81,40 +79,38 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 ## Current Progress Summary
 
-| Phase | 状态 | 说明 |
-|-------|------|------|
-| Phase 0 | 完成 | 项目上下文与基础文件 |
-| Phase 1 | 完成 | 后端项目骨架，/api/health 可用 |
-| Phase 2 | 完成 | 数据库与模型，seed.py 可生成测试数据 |
-| Phase 3 | 完成 | 认证系统，登录/JWT/限频/管理员自动创建 |
-| Phase 4 | 完成 | 公开报修与保修接口，客户可提交报修和查询保修 |
-| Phase 5 | 完成 | 后台订单 API，订单列表/筛选/今日预约/待回访/统计/更新 |
-| Phase 6 | 完成 | 文件上传与 Excel 导出 |
-| Phase 7 | 完成 | 前端项目骨架，React+Vite+TS+Tailwind，路由/组件/类型/常量 |
-| Phase 8 | 完成 | 客户公开页面，报修表单/成功页/保修查询页 |
-| Phase 9 | 完成 | 老板后台页面，登录/首页/订单列表/详情/今日预约/待回访/我的 |
-| Phase 10 | 完成 | 生产构建与 FastAPI 静态托管，单进程可运行 |
-| Phase 11 | 完成 | 测试与验收，v1.0 核心流程全部通过 |
-| Phase 12 | 完成 | 文档与交付，v1.0 开发完成 |
+| 版本 | 状态 | 说明 |
+|------|------|------|
+| v1.0（Phase 0-12） | ✅ 完成 | 全部 12 Phase 通过，Codex 审计 PASS_WITH_FIXES，复审 PASS |
+| Mobile Hotfix | ✅ 完成 | 七轮修复全部通过（2026-05-03） |
+| v1.1 | ✅ 完成 | 备份/清理/限频/改密，14/14 端点 PASS，Codex 审计 PASS（2026-05-03） |
 
-## v1.0 交付状态
+## v1.1 交付状态
 
-v1.0 开发已完成，全部 12 个 Phase 通过。核心功能已通过 Phase 11 测试：
-- 公开报修流程（上传+提交+入库+图片移动）
-- 登录/锁定/退出流程
-- 订单管理（筛选+搜索+更新+repair_logs+warranty_token）
-- 今日预约（基于 scheduled_at）
-- 待回访（标记后列表刷新）
-- 保修查询隐私边界（无泄露）
-- Excel 导出（全部+筛选）
-- SPA 刷新（前端路由不 404）
+v1.1 已于 2026-05-03 开发完成并通过 Codex 审计（**PASS**）。详见 `docs/V1_1_PLAN.md` 和 `docs/V1_1_AUDIT_REPORT.md`。
 
-## 下一步建议
+## 下一步
 
-1. 真实设备试用：在舅舅手机上测试完整流程
-2. 部署服务器：Caddy + HTTPS + systemd
-3. 备份策略：定期备份 repair.db + uploads
-4. v1.1 backlog：登录限频持久化、临时图片清理、备份脚本
+项目已完成 v1.0 + v1.1 开发，当前状态为**交付前准备**：
+
+1. 交付前最终 smoke test
+2. GitHub release / tag
+3. 部署准备（Caddy + HTTPS + systemd，确认 X-Forwarded-For 信任边界）
+4. 真实使用期观察（见 `docs/REAL_DEVICE_TEST_PLAN.md`）
+5. v1.2 只在有真实需求后再规划
+
+## v1.0 边界（不可随意扩展）
+
+- 不接入 AI（无大模型 API、无 AI 客服/诊断/报价）
+- 不做微信小程序
+- 不做库存管理、多员工、会员、在线支付
+- 不自动删除无效订单，使用"未成交"状态
+- 图片预览只做轻量弹层，不做图片管理系统
+
+## v1.2 路线图（有真实需求后再规划）
+
+- 店铺信息编辑（名称、电话，从 .env 迁移到数据库）
+- 保修二维码生成与下载
 
 ## 关键规则
 

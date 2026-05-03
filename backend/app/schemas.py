@@ -27,6 +27,18 @@ class UserResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class ChangePasswordRequest(BaseModel):
+    old_password: str
+    new_password: str = Field(..., min_length=6)
+    confirm_password: str
+
+    @model_validator(mode="after")
+    def passwords_match(self):
+        if self.new_password != self.confirm_password:
+            raise ValueError("新密码与确认密码不一致")
+        return self
+
+
 # --- 公开报修 ---
 
 class RepairSubmitRequest(BaseModel):
