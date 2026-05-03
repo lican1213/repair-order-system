@@ -140,7 +140,7 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 - 订单详情（编辑维修记录、设置保修、一键拨打、复制地址）
 - 今日预约（基于实际上门时间）
 - 待回访（标记已回访/有问题/无需回访）
-- Excel 导出
+- Excel 导出（入口位于后台订单列表页 /admin/orders，支持按当前筛选条件导出）
 - 我的页面（退出登录）
 
 ## 备份说明

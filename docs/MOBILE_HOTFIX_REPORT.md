@@ -322,3 +322,33 @@ npm run build → 无 TS 错误 ✓
 ## 是否可以继续手机真机试用
 
 **可以。** 问题已修复，回归测试通过。
+
+---
+
+# Mobile Hotfix 第六轮 (2026-05-03)
+
+## 修复项清单
+
+| # | 问题 | 修复方式 | 状态 |
+|---|------|---------|------|
+| 1 | 图片点击打开新窗口体验差 | 新增 ImagePreviewModal 弹层预览组件 | 完成 |
+| 2 | 后台无 Excel 导出入口 | OrderList 增加导出按钮，按筛选条件导出 | 完成 |
+
+## 修改文件清单
+
+| 文件 | 操作 | 说明 |
+|------|------|------|
+| `frontend/src/components/ImagePreviewModal.tsx` | 新建 | 图片弹层预览组件 |
+| `frontend/src/pages/OrderDetail.tsx` | 修改 | 图片改为弹层预览 |
+| `frontend/src/api/orders.ts` | 修改 | 新增 exportOrders 函数 |
+| `frontend/src/pages/OrderList.tsx` | 修改 | 新增导出 Excel 按钮 |
+
+## 测试结果
+
+```
+npm run build: 无 TS 错误 ✓
+```
+
+## 是否可以继续手机真机试用
+
+**可以。** 两个修改已完成，build 通过。

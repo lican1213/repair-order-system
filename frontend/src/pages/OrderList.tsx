@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import BottomNav from '../components/BottomNav'
 import StatusBadge from '../components/StatusBadge'
-import { getOrders } from '../api/orders'
+import { getOrders, exportOrders } from '../api/orders'
 import { ORDER_STATUSES, FOLLOWUP_STATUSES } from '../utils/constants'
 import type { Order } from '../types/order'
 
@@ -16,6 +16,7 @@ export default function OrderList() {
   const [hasMore, setHasMore] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [exporting, setExporting] = useState(false)
 
   const statusFilter = searchParams.get('status') || ''
   const followupFilter = searchParams.get('followup_status') || ''
@@ -90,6 +91,33 @@ export default function OrderList() {
     setSearchParams(next)
   }
 
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      const blob = await exportOrders({
+        status: statusFilter || undefined,
+        followup_status: followupFilter || undefined,
+        keyword: keyword || undefined,
+        created_date: createdDate || undefined,
+        scheduled_date: scheduledDate || undefined,
+      })
+      const now = new Date()
+      const filename = `orders_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}.xlsx`
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+    } catch {
+      setError('导出失败，请稍后重试')
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <div className="p-4">
@@ -143,7 +171,16 @@ export default function OrderList() {
 
         {error && <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">{error}</div>}
 
-        <div className="text-xs text-gray-400 mb-3">共 {total} 条</div>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs text-gray-400">共 {total} 条</span>
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="min-h-[44px] px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+          >
+            {exporting ? '导出中...' : '导出 Excel'}
+          </button>
+        </div>
 
         {/* 列表 */}
         <div className="flex flex-col gap-3">

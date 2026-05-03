@@ -401,3 +401,17 @@
 **决策：** 创建 `frontend/src/utils/images.ts`，`parseImagePaths()` 兼容 JSON 数组字符串和历史 Python list 字符串。
 
 **理由：** 数据库中 image_paths 可能存在两种格式：合法 JSON 和 Python list 字符串。前端必须兼容两者。
+
+## Mobile Hotfix 第六轮决策
+
+### D-046: 图片预览采用轻量自建 modal
+
+**决策：** 新增 `ImagePreviewModal` 组件，fixed 覆盖 + 半透明背景 + X 关闭按钮，不引入第三方图片预览库。
+
+**理由：** 需求简单，自建组件可控，避免引入额外依赖。
+
+### D-047: Excel 导出入口位于 /admin/orders
+
+**决策：** 在订单列表页筛选区下方增加"导出 Excel"按钮，按当前筛选条件导出。
+
+**理由：** 后端接口已有，前端只需加入口，方便老板随时导出。

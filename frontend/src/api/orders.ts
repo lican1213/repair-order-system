@@ -40,3 +40,19 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   const res = await client.get<DashboardSummary>('/api/orders/dashboard/summary')
   return res.data
 }
+
+interface ExportParams {
+  status?: string
+  followup_status?: string
+  created_date?: string
+  scheduled_date?: string
+  keyword?: string
+}
+
+export async function exportOrders(params: ExportParams = {}): Promise<Blob> {
+  const res = await client.get('/api/export/orders', {
+    params,
+    responseType: 'blob',
+  })
+  return res.data as Blob
+}
