@@ -1,0 +1,42 @@
+import client from './client'
+import type { Order, OrderListResponse, DashboardSummary, OrderUpdateRequest } from '../types/order'
+
+interface OrderListParams {
+  status?: string
+  followup_status?: string
+  created_date?: string
+  scheduled_date?: string
+  keyword?: string
+  page?: number
+  page_size?: number
+}
+
+export async function getOrders(params: OrderListParams = {}): Promise<OrderListResponse> {
+  const res = await client.get<OrderListResponse>('/api/orders', { params })
+  return res.data
+}
+
+export async function getOrder(id: number): Promise<Order> {
+  const res = await client.get<Order>(`/api/orders/${id}`)
+  return res.data
+}
+
+export async function updateOrder(id: number, data: OrderUpdateRequest): Promise<Order> {
+  const res = await client.patch<Order>(`/api/orders/${id}`, data)
+  return res.data
+}
+
+export async function getTodayOrders(): Promise<Order[]> {
+  const res = await client.get<Order[]>('/api/orders/today')
+  return res.data
+}
+
+export async function getFollowups(): Promise<Order[]> {
+  const res = await client.get<Order[]>('/api/orders/followups')
+  return res.data
+}
+
+export async function getDashboardSummary(): Promise<DashboardSummary> {
+  const res = await client.get<DashboardSummary>('/api/orders/dashboard/summary')
+  return res.data
+}
