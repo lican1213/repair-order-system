@@ -2,9 +2,29 @@
 
 ## 当前状态
 
-**v1.1 开发完成** — 2026-05-03。
+**v1.1 开发完成，线上灰度使用和小型内容更新中** — 2026-05-04。
 
-v1.0 全部 12 个 Phase 通过。Codex 独立审计结论：**PASS_WITH_FIXES**，audit fixes 已通过 Codex 复审（**PASS**）。Mobile Hotfix 七轮已完成。v1.1 四项增强全部实现并通过回归测试（14/14 端点 PASS）。2026-05-04 完成部署前稳定性小修：SQLite WAL + busy_timeout、Caddy HTTPS 部署 runbook、cron 自动备份说明。详细计划见 `docs/V1_1_PLAN.md`。
+v1.0 全部 12 个 Phase 通过。Codex 独立审计结论：**PASS_WITH_FIXES**，audit fixes 已通过 Codex 复审（**PASS**）。Mobile Hotfix 七轮已完成。v1.1 四项增强全部实现并通过回归测试（14/14 端点 PASS）。2026-05-04 完成部署前稳定性小修：SQLite WAL + busy_timeout、Caddy HTTPS 部署 runbook、cron 自动备份说明。同日新增公开清洗服务价格表 `/pricing`，属于静态前端内容更新，不涉及后端 API 或数据库。详细计划见 `docs/V1_1_PLAN.md`。
+
+## 线上灰度内容更新
+
+| 项目 | 状态 | 日期 | 说明 |
+|------|------|------|------|
+| 清洗服务价格表 `/pricing` | 完成 | 2026-05-04 | 静态公开前端页面，展示清洗服务起步参考价 |
+| `/repair` 价格表入口 | 完成 | 2026-05-04 | 报修页顶部新增“查看清洗价格表”入口，使用相对路由 `/pricing` |
+| 后端 API / 数据库 | 未修改 | 2026-05-04 | 价格表不做自动报价、支付、后台价格管理或数据库价格表 |
+
+## 线上灰度内容更新验证
+
+| 测试项 | 结果 | 日期 |
+|--------|------|------|
+| `npm run lint` | PASS | 2026-05-04 |
+| `npm run build` | PASS | 2026-05-04 |
+| 生产模式 `GET /pricing` | PASS | 2026-05-04 |
+| `/pricing` 刷新不 404 | PASS | 2026-05-04 |
+| `/pricing` 底部按钮跳转 `/repair` | PASS | 2026-05-04 |
+| `/repair` 价格表入口跳转 `/pricing` | PASS | 2026-05-04 |
+| 手机尺寸页面可读性 | PASS | 2026-05-04 |
 
 ## 部署前稳定性小修
 

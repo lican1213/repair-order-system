@@ -181,10 +181,6 @@ export default function OrderDetail() {
             <a href={`tel:${order.phone}`} className="flex-1 min-h-[44px] flex items-center justify-center bg-green-50 text-green-700 rounded-lg text-sm font-medium">📞 拨打</a>
             <button onClick={handleCopyAddress} className="flex-1 min-h-[44px] flex items-center justify-center bg-gray-50 text-gray-700 rounded-lg text-sm font-medium">📋 复制地址</button>
           </div>
-          {order.latitude != null && order.longitude != null && (
-            <a href={`https://uri.amap.com/marker?position=${order.longitude},${order.latitude}`} target="_blank" rel="noopener noreferrer"
-              className="mt-2 min-h-[44px] flex items-center justify-center bg-blue-50 text-blue-700 rounded-lg text-sm font-medium">📍 查看定位</a>
-          )}
         </div>
 
         {/* 家电信息 */}

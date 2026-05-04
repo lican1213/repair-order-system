@@ -53,7 +53,26 @@ WantedBy=multi-user.target
 - 不使用 `--host 0.0.0.0` 暴露 FastAPI 到公网。
 - Caddy 反代目标是 `127.0.0.1:8000`。
 
-## 4. 自动备份 cron
+## 4. 生产环境 .env 配置
+
+在服务器上编辑 `backend/.env`：
+
+```bash
+# 必填
+SECRET_KEY=<用 python -c "import secrets; print(secrets.token_urlsafe(32))" 生成>
+ADMIN_PASSWORD=<强密码>
+SHOP_NAME=你的店铺名称
+SHOP_PHONE=你的联系电话
+
+# 当前正式部署版不启用地图定位或逆地理编码。
+# 地址由客户填写小区和详细地址，师傅上门前电话确认。
+```
+
+**安全提醒：**
+- `.env` 文件不得提交到 Git（已在 `.gitignore` 排除）。
+- 不需要配置高德、百度、腾讯等地图 Key。
+
+## 5. 自动备份 cron
 
 项目已有 `scripts/backup.py`，会同时备份：
 
@@ -83,7 +102,7 @@ cron 示例：
 - 如需调整保留数量，使用 `scripts/backup.py --keep N`。
 - 定期将 `backups/` 下载到本地电脑或网盘，避免服务器磁盘故障导致备份一并丢失。
 
-## 5. 部署前 smoke test
+## 6. 部署前 smoke test
 
 在服务器上确认：
 

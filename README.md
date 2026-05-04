@@ -2,7 +2,7 @@
 
 客户扫码报修，老板手机后台管理订单，保修凭证查询。
 
-当前状态：v1.1 开发完成（2026-05-03）。v1.0 全部 Phase + audit fixes + mobile hotfix 已完成；v1.1 新增备份脚本、临时图片清理、公开接口限频、修改密码。
+当前状态：v1.1 开发完成（2026-05-03），已进入线上灰度使用和小型内容更新阶段。v1.0 全部 Phase + audit fixes + mobile hotfix 已完成；v1.1 新增备份脚本、临时图片清理、公开接口限频、修改密码。本轮新增公开清洗服务价格表 `/pricing`，不涉及后端 API 或数据库。
 
 ## 技术栈
 
@@ -55,6 +55,7 @@ npm run dev
 **访问：**
 
 - 客户报修：http://localhost:5173/repair
+- 清洗服务价格表：http://localhost:5173/pricing
 - 后台登录：http://localhost:5173/admin
 - 健康检查：http://localhost:5173/api/health
 
@@ -98,6 +99,7 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 **访问：**
 
 - http://localhost:8000/repair
+- http://localhost:8000/pricing
 - http://localhost:8000/admin
 - http://localhost:8000/warranty/t/{token}
 
@@ -117,6 +119,8 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 - `SHOP_NAME` — 你的店铺名称
 - `SHOP_PHONE` — 你的联系电话
 
+地址由客户手动填写小区和详细地址，师傅上门前电话确认。正式部署版不需要配置地图 Key 或逆地理编码服务。
+
 ## 测试账号
 
 默认来自 `.env`：
@@ -130,6 +134,7 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 **客户端：**
 - 报修表单（姓名、手机、小区、地址、家电类型、故障描述、图片）
+- 清洗服务价格表（`/pricing`，只展示起步参考价，不是最终报价）
 - 提交成功页（工单编号、师傅电话、安全提示）
 - 保修查询页（扫码查看保修凭证）
 

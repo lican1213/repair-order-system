@@ -83,8 +83,10 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 |------|------|------|
 | v1.0（Phase 0-12） | ✅ 完成 | 全部 12 个 Phase 通过，Codex 审计 PASS_WITH_FIXES，复审 PASS |
 | Mobile Hotfix | ✅ 完成 | 七轮修复全部通过（2026-05-03） |
-| v1.1 | ✅ 完成 | 4 项增强（备份/清理/限频/改密），14/14 端点 PASS，Codex 审计 PASS（2026-05-03） |
+| v1.1 | ✅ 完成 | 4 项增强（备份/清理/限频/改密），Codex 审计 PASS（2026-05-03） |
+| v1.1 部署前简化 | ✅ 完成 | 已移除客户报修页定位入口；当前地址流程改为客户手填小区/详细地址 + 师傅电话确认（2026-05-04） |
 | 部署前稳定性小修 | ✅ 完成 | SQLite WAL/busy_timeout、Caddy HTTPS runbook、cron 备份说明（2026-05-04） |
+| 线上灰度内容更新 | ✅ 完成 | 新增公开清洗服务价格表 `/pricing`，并在 `/repair` 增加入口；静态前端内容页，不涉及后端 API 或数据库（2026-05-04） |
 
 ## 版本交付状态
 
@@ -108,13 +110,12 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 
 ## 下一步
 
-项目已完成 v1.0 + v1.1 开发，当前状态为**交付前准备**：
+项目已完成 v1.0 + v1.1 开发，并进入**线上灰度使用和小型内容更新**阶段：
 
-1. 交付前最终 smoke test
-2. GitHub release / tag
-3. 部署准备（Caddy + HTTPS + systemd，确认 X-Forwarded-For 信任边界；见 `docs/DEPLOYMENT_RUNBOOK.md`）
-4. 真实使用期观察（见 `docs/REAL_DEVICE_TEST_PLAN.md`）
-5. v1.2 只在有真实需求后再规划
+1. 线上灰度观察（见 `docs/REAL_DEVICE_TEST_PLAN.md`）
+2. 小型内容更新按静态前端页面处理，避免引入后端和数据库复杂度
+3. 继续按 `docs/DEPLOYMENT_RUNBOOK.md` 做备份、HTTPS、systemd 和反向代理确认
+4. v1.2 只在有真实需求后再规划，当前不要进入功能膨胀
 
 ## v1.0 边界（不可随意扩展）
 

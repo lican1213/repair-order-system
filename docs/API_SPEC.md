@@ -58,10 +58,7 @@
   "fault_description": "不制冷，外机异响",
   "preferred_time": "明天上午",
   "is_urgent": false,
-  "image_paths": ["/uploads/orders/temp/abc123.webp"],
-  "latitude": 39.9042,
-  "longitude": 116.4074,
-  "location_address": "北京市东城区"
+  "image_paths": ["/uploads/orders/temp/abc123.webp"]
 }
 ```
 
@@ -69,7 +66,7 @@
 
 **phone 校验：** 必须为 11 位纯数字，以 1 开头。不符合返回 422。
 
-**可选字段：** latitude, longitude, location_address（定位信息）
+**兼容字段：** latitude, longitude, location_address 为历史兼容可选字段，当前前端不主动采集、不主动提交。
 
 **响应：**
 ```json
@@ -79,8 +76,6 @@
   "shop_phone": "13800138000"
 }
 ```
-
----
 
 ### GET /api/public/shop-info
 

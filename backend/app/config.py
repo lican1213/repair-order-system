@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE_MB: int = 5
     PUBLIC_UPLOAD_MAX_FILES: int = 5
 
+    # 高德地图 Web服务 API（逆地理编码）
+    AMAP_WEB_SERVICE_KEY: str | None = None
+    AMAP_REGEOCODE_ENABLED: bool = False
+
     model_config = {
         "env_file": str(BASE_DIR / ".env"),
         "env_file_encoding": "utf-8",

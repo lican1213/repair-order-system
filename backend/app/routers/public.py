@@ -1,6 +1,9 @@
 import json
 import secrets
 import shutil
+import urllib.error
+import urllib.parse
+import urllib.request
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, status
@@ -15,6 +18,8 @@ from app.schemas import (
     PublicUploadResponse,
     RepairSubmitRequest,
     RepairSubmitResponse,
+    ReverseGeocodeRequest,
+    ReverseGeocodeResponse,
     ShopInfoResponse,
 )
 from app.utils import generate_order_no
@@ -50,6 +55,59 @@ def get_shop_info():
     return ShopInfoResponse(
         shop_name=settings.SHOP_NAME,
         shop_phone=settings.SHOP_PHONE,
+    )
+
+
+@router.post("/reverse-geocode", response_model=ReverseGeocodeResponse)
+def reverse_geocode(req: ReverseGeocodeRequest):
+    """经纬度逆地理编码（调用高德 Web服务 API）。"""
+    if not settings.AMAP_REGEOCODE_ENABLED or not settings.AMAP_WEB_SERVICE_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="地址识别服务未启用",
+        )
+
+    # 高德 location 顺序: longitude,latitude
+    location = f"{req.longitude},{req.latitude}"
+    params = urllib.parse.urlencode({
+        "key": settings.AMAP_WEB_SERVICE_KEY,
+        "location": location,
+        "output": "json",
+        "extensions": "base",
+        "radius": "1000",
+    })
+    url = f"https://restapi.amap.com/v3/geocode/regeo?{params}"
+
+    try:
+        with urllib.request.urlopen(url, timeout=3) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except (urllib.error.URLError, OSError, json.JSONDecodeError) as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"地址识别服务请求失败: {e}",
+        )
+
+    if data.get("status") != "1":
+        info = data.get("info", "unknown error")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"地址识别服务返回错误: {info}",
+        )
+
+    regeocode = data.get("regeocode", {})
+    address_component = regeocode.get("addressComponent", {})
+
+    # 提取 POI（最近的兴趣点）
+    pois = regeocode.get("pois", [])
+    poi_name = pois[0].get("name") if pois else None
+
+    return ReverseGeocodeResponse(
+        formatted_address=regeocode.get("formatted_address"),
+        province=address_component.get("province"),
+        city=address_component.get("city"),
+        district=address_component.get("district"),
+        township=address_component.get("township"),
+        poi_name=poi_name,
     )
 
 

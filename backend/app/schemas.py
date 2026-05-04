@@ -116,6 +116,20 @@ class ShopInfoResponse(BaseModel):
     shop_phone: str
 
 
+class ReverseGeocodeRequest(BaseModel):
+    latitude: float = Field(..., ge=-90, le=90)
+    longitude: float = Field(..., ge=-180, le=180)
+
+
+class ReverseGeocodeResponse(BaseModel):
+    formatted_address: str | None = None
+    province: str | None = None
+    city: str | None = None
+    district: str | None = None
+    township: str | None = None
+    poi_name: str | None = None
+
+
 # --- 保修查询 ---
 
 class WarrantyResponse(BaseModel):

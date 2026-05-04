@@ -35,9 +35,9 @@
 | warranty_token | TEXT | UNIQUE | 保修查询 token |
 | warranty_note | TEXT | | 保修说明 |
 | source | TEXT | DEFAULT '扫码报修' | 订单来源 |
-| latitude | REAL | | 纬度（可选） |
-| longitude | REAL | | 经度（可选） |
-| location_address | TEXT | | 定位地址文本（可选） |
+| latitude | REAL | | 纬度（兼容字段；当前前端不主动采集，保留用于未来扩展） |
+| longitude | REAL | | 经度（兼容字段；当前前端不主动采集，保留用于未来扩展） |
+| location_address | TEXT | | 定位地址文本（兼容字段；当前前端不主动采集，保留用于未来扩展） |
 | completed_at | DATETIME | | 实际维修完成时间 |
 | created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 创建时间 |
 | updated_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 更新时间 |

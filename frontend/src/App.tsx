@@ -3,6 +3,7 @@ import ProtectedRoute from './routes/ProtectedRoute'
 
 import RepairForm from './pages/RepairForm'
 import RepairSuccess from './pages/RepairSuccess'
+import PricingPage from './pages/PricingPage'
 import WarrantyPage from './pages/WarrantyPage'
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
@@ -34,6 +35,7 @@ export default function App() {
         {/* 公开页面 */}
         <Route path="/repair" element={<RepairForm />} />
         <Route path="/repair/success" element={<RepairSuccess />} />
+        <Route path="/pricing" element={<PricingPage />} />
         <Route path="/warranty/t/:token" element={<WarrantyPage />} />
 
         {/* 后台登录 */}

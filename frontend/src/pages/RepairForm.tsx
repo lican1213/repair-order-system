@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Button from '../components/Button'
 import Input from '../components/Input'
 import Select from '../components/Select'
@@ -35,11 +35,6 @@ export default function RepairForm() {
 
   const [preferredDate, setPreferredDate] = useState('')
   const [preferredSlot, setPreferredSlot] = useState('')
-
-  const [latitude, setLatitude] = useState<number | null>(null)
-  const [longitude, setLongitude] = useState<number | null>(null)
-  const [locationAddress, setLocationAddress] = useState<string | null>(null)
-  const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'ok' | 'fail'>('idle')
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const fieldRefs = useRef<Record<string, HTMLElement | null>>({})
@@ -80,24 +75,6 @@ export default function RepairForm() {
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value.replace(/\D/g, '').slice(0, 11)
     update('phone', val)
-  }
-
-  const handleGetLocation = () => {
-    if (!navigator.geolocation) {
-      setLocationStatus('fail')
-      return
-    }
-    setLocationStatus('loading')
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLatitude(pos.coords.latitude)
-        setLongitude(pos.coords.longitude)
-        setLocationAddress(`${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`)
-        setLocationStatus('ok')
-      },
-      () => setLocationStatus('fail'),
-      { enableHighAccuracy: true, timeout: 10000 }
-    )
   }
 
   const scrollToFirstError = () => {
@@ -156,9 +133,6 @@ export default function RepairForm() {
         brand_model: form.brand_model || undefined,
         preferred_time: preferredTime || undefined,
         image_paths: imagePaths,
-        latitude: latitude ?? undefined,
-        longitude: longitude ?? undefined,
-        location_address: locationAddress ?? undefined,
       })
       navigate('/repair/success', {
         state: { order_no: res.order_no, shop_phone: res.shop_phone },
@@ -184,6 +158,17 @@ export default function RepairForm() {
       <div className="max-w-lg mx-auto p-4">
         <h1 className="text-xl font-bold mb-6 text-center">报修申请</h1>
 
+        <Link
+          to="/pricing"
+          className="mb-4 flex min-h-[44px] items-center justify-between gap-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-blue-700 active:bg-blue-100"
+        >
+          <span>
+            <span className="block text-sm font-semibold">查看清洗价格表</span>
+            <span className="mt-0.5 block text-xs text-blue-600">空调、洗衣机、油烟机等清洗起步价参考</span>
+          </span>
+          <span className="shrink-0 text-lg leading-none" aria-hidden="true">›</span>
+        </Link>
+
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">{error}</div>
         )}
@@ -204,26 +189,15 @@ export default function RepairForm() {
 
           {/* 小区 */}
           <div ref={(el) => { fieldRefs.current.community = el }}>
-            <Input label="小区 *" placeholder="小区名称" value={form.community} onChange={(e) => update('community', e.target.value)} />
+            <Input label="小区 *" placeholder="小区名称，例如：阳光小区" value={form.community} onChange={(e) => update('community', e.target.value)} />
             {fieldErrors.community && <p className="text-red-600 text-sm mt-1">{fieldErrors.community}</p>}
           </div>
 
           {/* 详细地址 */}
           <div ref={(el) => { fieldRefs.current.address = el }}>
-            <Input label="详细地址 *" placeholder="楼栋-单元-门牌号" value={form.address} onChange={(e) => update('address', e.target.value)} />
+            <Input label="详细地址 *" placeholder="楼栋-单元-门牌号，例如：3号楼2单元501" value={form.address} onChange={(e) => update('address', e.target.value)} />
+            <p className="text-xs text-gray-500 mt-1">师傅上门前会电话确认地址，请保持电话畅通。</p>
             {fieldErrors.address && <p className="text-red-600 text-sm mt-1">{fieldErrors.address}</p>}
-          </div>
-
-          {/* 定位按钮 */}
-          <div>
-            <button type="button" onClick={handleGetLocation} disabled={locationStatus === 'loading'}
-              className="min-h-[44px] w-full px-4 py-2 border border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-blue-400 hover:text-blue-500 transition-colors">
-              {locationStatus === 'loading' ? '获取定位中...' : locationStatus === 'ok' ? '已获取定位 ✓' : '获取当前位置（可选）'}
-            </button>
-            {locationStatus === 'ok' && latitude != null && longitude != null && (
-              <p className="text-xs text-green-600 mt-1">定位: {latitude.toFixed(6)}, {longitude.toFixed(6)}</p>
-            )}
-            {locationStatus === 'fail' && <p className="text-xs text-gray-400 mt-1">定位失败，请手动填写地址</p>}
           </div>
 
           {/* 家电类型 */}
