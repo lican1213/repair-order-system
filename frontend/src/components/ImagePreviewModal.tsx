@@ -49,6 +49,8 @@ export default function ImagePreviewModal({ src, images, alt, onClose }: ImagePr
   if (imageList.length === 0) return null
 
   const currentSrc = imageList[safeIndex]
+  const iconButtonClass = 'shrink-0 grid h-11 w-11 place-items-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/40'
+  const iconClass = 'h-6 w-6'
 
   return (
     <div
@@ -60,9 +62,11 @@ export default function ImagePreviewModal({ src, images, alt, onClose }: ImagePr
         type="button"
         onClick={onClose}
         aria-label="关闭图片预览"
-        className="fixed top-4 right-4 z-50 w-11 h-11 flex items-center justify-center bg-white/20 hover:bg-white/40 rounded-full text-white text-2xl font-bold transition-colors"
+        className={`fixed right-4 top-4 z-50 ${iconButtonClass}`}
       >
-        ×
+        <svg className={iconClass} viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+        </svg>
       </button>
 
       {/* Counter */}
@@ -80,9 +84,11 @@ export default function ImagePreviewModal({ src, images, alt, onClose }: ImagePr
             type="button"
             onClick={goPrev}
             aria-label="上一张"
-            className="shrink-0 w-11 h-11 flex items-center justify-center bg-white/20 hover:bg-white/40 rounded-full text-white text-2xl font-bold transition-colors"
+            className={iconButtonClass}
           >
-            ‹
+            <svg className={iconClass} viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </button>
         )}
 
@@ -111,9 +117,11 @@ export default function ImagePreviewModal({ src, images, alt, onClose }: ImagePr
             type="button"
             onClick={goNext}
             aria-label="下一张"
-            className="shrink-0 w-11 h-11 flex items-center justify-center bg-white/20 hover:bg-white/40 rounded-full text-white text-2xl font-bold transition-colors"
+            className={iconButtonClass}
           >
-            ›
+            <svg className={iconClass} viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </button>
         )}
       </div>
