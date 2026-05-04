@@ -135,3 +135,57 @@ Codex 独立审计结论 **PASS_WITH_FIXES**，8 项修复已完成并通过复�
 | 修改 | `backend/app/schemas.py`（ChangePasswordRequest） |
 | 修改 | `frontend/src/api/auth.ts`（changePassword API） |
 | 修改 | `frontend/src/pages/AdminProfile.tsx`（修改密码 UI） |
+
+---
+
+## v1.3 (2026-05-04)
+
+二手家电展示橱窗。定位为“后台发布 + 客户浏览 + 电话咨询”，不是商城系统。
+
+### 新增功能
+
+**客户端：**
+- `/used` 公开二手家电页面
+- 只展示在售商品
+- 商品图片页内预览
+- 电话咨询按钮
+- 明确展示“页面信息仅供参考，以电话沟通确认为准”的免责声明
+
+**老板后台：**
+- `/admin/used-appliances` 二手家电管理
+- 支持全部 / 在售 / 已售 / 下架筛选
+- 支持新增、编辑、上传图片
+- 支持快捷标记在售、已售、下架
+- dashboard 和 profile 增加管理入口，BottomNav 保持三栏
+
+**后端：**
+- 新增 `used_appliances` 表
+- 新增公开接口 `/api/used-appliances`
+- 新增后台接口 `/api/admin/used-appliances`
+- 新增后台图片上传 `/api/upload/used`
+
+### 明确未做
+
+- 未做在线购买
+- 未做购物车
+- 未做在线支付
+- 未做商品订单系统
+- 未做客户留言
+- 未做复杂库存和多规格 SKU
+- 未做 AI 报价、AI 选品或微信小程序
+
+### 测试结果
+
+- 后端 used appliances unittest PASS
+- 后端 compileall PASS
+- 前端 lint PASS
+- 前端 build PASS
+
+### 审计与修复（2026-05-04）
+
+独立审计结论 **PASS**。审计期间修复 2 个 bug：
+
+- 修复后台上传按钮点击无反应（`<label>` 隐式关联改为 `useRef` 编程式触发）
+- 修复公开页多图预览只显示第一张（`ImagePreviewModal` 支持 gallery 翻页）
+
+修复后 lint/build/unittest 回归全部 PASS。

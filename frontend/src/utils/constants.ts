@@ -29,6 +29,17 @@ export const APPLIANCE_TYPES = [
   '其他',
 ]
 
+export const USED_APPLIANCE_CATEGORIES = [
+  '空调',
+  '冰箱',
+  '洗衣机',
+  '热水器',
+  '电视',
+  '其他',
+]
+
+export const USED_APPLIANCE_STATUSES = ['在售', '已售', '下架'] as const
+
 export const STATUS_COLORS: Record<OrderStatus, string> = {
   '新报修': 'bg-red-100 text-red-700',
   '已联系': 'bg-blue-100 text-blue-700',

@@ -20,7 +20,7 @@ export default function OrderDetail() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [copyNotice, setCopyNotice] = useState('')
-  const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [previewImages, setPreviewImages] = useState<string[]>([])
   const fieldRefs = useRef<Record<string, HTMLElement | null>>({})
 
   const [form, setForm] = useState<OrderUpdateRequest>({})
@@ -203,7 +203,7 @@ export default function OrderDetail() {
             return images.length > 0 ? (
               <div className="grid grid-cols-3 gap-2">
                 {images.map((path) => (
-                  <button key={path} type="button" onClick={() => setPreviewImage(path)} className="p-0 border-0 bg-transparent">
+                  <button key={path} type="button" onClick={() => setPreviewImages(images)} className="p-0 border-0 bg-transparent">
                     <img src={path} alt="客户上传" className="h-24 w-full rounded-lg object-cover" />
                   </button>
                 ))}
@@ -294,9 +294,9 @@ export default function OrderDetail() {
       </div>
 
       <ImagePreviewModal
-        src={previewImage}
+        images={previewImages}
         alt="客户上传图片"
-        onClose={() => setPreviewImage(null)}
+        onClose={() => setPreviewImages([])}
       />
     </div>
   )

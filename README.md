@@ -1,8 +1,8 @@
-# 家电维修工单系统 v1.1
+# 家电维修工单系统 v1.3
 
-客户扫码报修，老板手机后台管理订单，保修凭证查询。
+客户扫码报修，老板手机后台管理订单，保修凭证查询，并提供极简二手家电展示橱窗。
 
-当前状态：v1.1 开发完成（2026-05-03），已进入线上灰度使用和小型内容更新阶段。v1.0 全部 Phase + audit fixes + mobile hotfix 已完成；v1.1 新增备份脚本、临时图片清理、公开接口限频、修改密码。本轮新增公开清洗服务价格表 `/pricing`，不涉及后端 API 或数据库。
+当前状态：v1.3 二手家电展示橱窗已实现（2026-05-04）。v1.1 已完成并通过 Codex 审计；线上灰度阶段已新增清洗服务价格表 `/pricing`；v1.3 新增公开 `/used` 和后台 `/admin/used-appliances`。二手家电仅展示和电话咨询，不做在线交易、支付、购物车、客户留言或商城系统。
 
 ## 技术栈
 
@@ -56,6 +56,7 @@ npm run dev
 
 - 客户报修：http://localhost:5173/repair
 - 清洗服务价格表：http://localhost:5173/pricing
+- 二手家电展示：http://localhost:5173/used
 - 后台登录：http://localhost:5173/admin
 - 健康检查：http://localhost:5173/api/health
 
@@ -100,7 +101,9 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 
 - http://localhost:8000/repair
 - http://localhost:8000/pricing
+- http://localhost:8000/used
 - http://localhost:8000/admin
+- http://localhost:8000/admin/used-appliances
 - http://localhost:8000/warranty/t/{token}
 
 ## 首次部署必须修改 .env
@@ -135,6 +138,7 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 **客户端：**
 - 报修表单（姓名、手机、小区、地址、家电类型、故障描述、图片）
 - 清洗服务价格表（`/pricing`，只展示起步参考价，不是最终报价）
+- 二手家电展示（`/used`，只展示在售商品，电话咨询，不在线交易）
 - 提交成功页（工单编号、师傅电话、安全提示）
 - 保修查询页（扫码查看保修凭证）
 
@@ -146,6 +150,7 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 - 今日预约（基于实际上门时间）
 - 待回访（标记已回访/有问题/无需回访）
 - Excel 导出（入口位于后台订单列表页 /admin/orders，支持按当前筛选条件导出）
+- 二手家电管理（`/admin/used-appliances`，发布、编辑、标记在售/已售/下架）
 - 我的页面（退出登录）
 
 ## 备份说明
@@ -191,6 +196,7 @@ python seed.py
 # 健康检查与公开店铺信息
 curl http://localhost:8000/api/health
 curl http://localhost:8000/api/public/shop-info
+curl http://localhost:8000/api/used-appliances
 
 # 导出 Excel（需先登录获取 token）
 # 先登录获取 token，然后：
@@ -258,3 +264,9 @@ WantedBy=multi-user.target
 **v1.2：**
 - 店铺信息编辑
 - 保修二维码生成与下载
+
+**v1.3（二手家电展示橱窗）— ✅ 已完成（2026-05-04）：**
+- ✅ 公开 `/used` 展示在售二手家电
+- ✅ 后台 `/admin/used-appliances` 发布、编辑、下架
+- ✅ 后台 `/api/upload/used` 上传商品图片
+- ✅ 只做展示橱窗和电话咨询，不做交易闭环

@@ -3,8 +3,13 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from app.constants import APPLIANCE_TYPES, FOLLOWUP_STATUSES, ORDER_STATUSES
-from app.json_utils import normalize_json_array_text
+from app.constants import (
+    APPLIANCE_TYPES,
+    FOLLOWUP_STATUSES,
+    ORDER_STATUSES,
+    USED_APPLIANCE_STATUSES,
+)
+from app.json_utils import normalize_json_array_text, parse_json_array_text
 
 
 # --- 认证 ---
@@ -234,3 +239,81 @@ class DashboardSummaryResponse(BaseModel):
     month_completed_count: int
     month_income: float
     recent_orders: list[OrderResponse]
+
+
+# --- 二手家电展示橱窗 ---
+
+class UsedApplianceBase(BaseModel):
+    title: str = Field(..., min_length=2, max_length=80)
+    category: str = Field(..., min_length=1, max_length=30)
+    brand_model: Optional[str] = Field(None, max_length=80)
+    price: Optional[str] = Field(None, max_length=30)
+    condition_note: Optional[str] = Field(None, max_length=200)
+    description: Optional[str] = Field(None, max_length=1000)
+    image_paths: list[str] = Field(default_factory=list)
+    status: str = "在售"
+    contact_phone: Optional[str] = Field(None, max_length=30)
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, value: str) -> str:
+        if value not in USED_APPLIANCE_STATUSES:
+            raise ValueError(f"无效的二手家电状态: {value}")
+        return value
+
+
+class UsedApplianceCreate(UsedApplianceBase):
+    pass
+
+
+class UsedApplianceUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=2, max_length=80)
+    category: Optional[str] = Field(None, min_length=1, max_length=30)
+    brand_model: Optional[str] = Field(None, max_length=80)
+    price: Optional[str] = Field(None, max_length=30)
+    condition_note: Optional[str] = Field(None, max_length=200)
+    description: Optional[str] = Field(None, max_length=1000)
+    image_paths: Optional[list[str]] = None
+    status: Optional[str] = None
+    contact_phone: Optional[str] = Field(None, max_length=30)
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, value: Optional[str]) -> Optional[str]:
+        if value is not None and value not in USED_APPLIANCE_STATUSES:
+            raise ValueError(f"无效的二手家电状态: {value}")
+        return value
+
+
+class UsedApplianceResponse(BaseModel):
+    id: int
+    title: str
+    category: str
+    brand_model: Optional[str]
+    price: Optional[str]
+    condition_note: Optional[str]
+    description: Optional[str]
+    image_paths: list[str] = Field(default_factory=list)
+    status: str
+    contact_phone: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+
+    @field_validator("image_paths", mode="before")
+    @classmethod
+    def parse_image_paths(cls, value):
+        if isinstance(value, str) or value is None:
+            return parse_json_array_text(value)
+        if isinstance(value, list):
+            return [item for item in value if isinstance(item, str)]
+        return []
+
+    model_config = {"from_attributes": True}
+
+
+class UsedApplianceListResponse(BaseModel):
+    items: list[UsedApplianceResponse]
+    total: int
+    page: int
+    page_size: int
+    has_more: bool

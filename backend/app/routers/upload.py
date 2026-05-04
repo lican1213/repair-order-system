@@ -19,21 +19,24 @@ MAX_FILE_SIZE = settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024  # 5MB
 MAX_FILES = settings.PUBLIC_UPLOAD_MAX_FILES  # 5
 
 
-@router.post("", response_model=PublicUploadResponse)
-async def upload_repair_images(
-    files: list[UploadFile],
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """后台上传维修照片（需 JWT）。"""
+def _resolve_uploads_dir() -> Path:
+    uploads_dir = Path(settings.UPLOAD_DIR)
+    if not uploads_dir.is_absolute():
+        uploads_dir = BASE_DIR / uploads_dir
+    return uploads_dir
+
+
+UPLOADS_DIR = _resolve_uploads_dir()
+
+
+async def _save_images(files: list[UploadFile], target_dir: Path, url_prefix: str) -> PublicUploadResponse:
     if len(files) > MAX_FILES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"最多上传 {MAX_FILES} 张图片",
         )
 
-    orders_dir = BASE_DIR / "uploads" / "orders"
-    orders_dir.mkdir(parents=True, exist_ok=True)
+    target_dir.mkdir(parents=True, exist_ok=True)
 
     saved_paths = []
     for file in files:
@@ -62,12 +65,32 @@ async def upload_repair_images(
 
         # 生成随机文件名
         random_name = secrets.token_urlsafe(16) + ext
-        file_path = orders_dir / random_name
+        file_path = target_dir / random_name
 
         # 写入文件
         with open(file_path, "wb") as f:
             f.write(content)
 
-        saved_paths.append(f"/uploads/orders/{random_name}")
+        saved_paths.append(f"{url_prefix}/{random_name}")
 
     return PublicUploadResponse(paths=saved_paths)
+
+
+@router.post("/used", response_model=PublicUploadResponse)
+async def upload_used_appliance_images(
+    files: list[UploadFile],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """后台上传二手家电图片（需 JWT）。"""
+    return await _save_images(files, UPLOADS_DIR / "used", "/uploads/used")
+
+
+@router.post("", response_model=PublicUploadResponse)
+async def upload_repair_images(
+    files: list[UploadFile],
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """后台上传维修照片（需 JWT）。"""
+    return await _save_images(files, UPLOADS_DIR / "orders", "/uploads/orders")

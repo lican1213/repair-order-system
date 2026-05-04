@@ -26,3 +26,9 @@ APPLIANCE_TYPES = [
     "油烟机",
     "其他",
 ]
+
+USED_APPLIANCE_STATUSES = [
+    "在售",
+    "已售",
+    "下架",
+]

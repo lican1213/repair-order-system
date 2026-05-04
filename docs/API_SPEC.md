@@ -93,6 +93,63 @@
 
 ---
 
+### GET /api/used-appliances
+
+公开二手家电列表。无需登录，只返回 `status=在售` 的商品。
+
+**查询参数：**
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| category | string | 按类别筛选，可选 |
+| page | int | 页码，默认 1 |
+| page_size | int | 每页数量，默认 20，最大 50 |
+
+**响应：**
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "title": "二手海尔洗衣机",
+      "category": "洗衣机",
+      "brand_model": "海尔 XQB80",
+      "price": "800元起",
+      "condition_note": "八成新，正常使用",
+      "description": "适合出租房使用，具体请电话确认。",
+      "image_paths": ["/uploads/used/abc123.webp"],
+      "status": "在售",
+      "contact_phone": "13800138000",
+      "created_at": "2026-05-04T10:00:00",
+      "updated_at": "2026-05-04T10:00:00"
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "page_size": 20,
+  "has_more": false
+}
+```
+
+**展示边界：**
+- 只返回在售商品。
+- 已售和下架商品不返回。
+- 不提供下单、支付、购物车或留言能力。
+
+---
+
+### GET /api/used-appliances/{id}
+
+公开二手家电详情。无需登录。
+
+**规则：**
+- 只允许查询 `status=在售` 的商品。
+- 已售、下架或不存在返回 404。
+
+**错误：**
+- 404: 二手家电不存在或已下架
+
+---
+
 ### GET /api/warranty/{token}
 
 保修查询。只返回公开字段。
@@ -284,6 +341,86 @@
 
 ---
 
+## 二手家电后台接口（需登录）
+
+所有接口需要 `Authorization: Bearer <token>`。
+
+### GET /api/admin/used-appliances
+
+后台二手家电列表。admin 可查看全部状态。
+
+**查询参数：**
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| status | string | 全部为空；可传 在售 / 已售 / 下架 |
+| category | string | 按类别筛选 |
+| keyword | string | 搜索标题、品牌型号、成色说明 |
+| page | int | 页码，默认 1 |
+| page_size | int | 每页数量，默认 20，最大 100 |
+
+---
+
+### POST /api/admin/used-appliances
+
+新增二手家电。
+
+**请求：**
+```json
+{
+  "title": "二手海尔洗衣机",
+  "category": "洗衣机",
+  "brand_model": "海尔 XQB80",
+  "price": "800元起",
+  "condition_note": "八成新，正常使用",
+  "description": "适合出租房使用，具体请电话确认。",
+  "image_paths": ["/uploads/used/abc123.webp"],
+  "status": "在售",
+  "contact_phone": "13800138000"
+}
+```
+
+**校验：**
+- title: 2-80 字
+- category: 1-30 字
+- price: 最多 30 字，TEXT，允许“面议/800元起/电话确认”
+- status: 只能是 在售 / 已售 / 下架
+
+---
+
+### GET /api/admin/used-appliances/{id}
+
+后台查看二手家电详情。需登录，可查看全部状态。
+
+---
+
+### PATCH /api/admin/used-appliances/{id}
+
+编辑二手家电或切换状态。
+
+**说明：**
+- 下架通过 `status=下架` 实现。
+- 售出通过 `status=已售` 实现。
+
+### DELETE /api/admin/used-appliances/{id}
+
+删除已下架的二手家电（硬删除 + 清理关联图片文件）。
+
+**规则：**
+- 仅限 `status=下架` 的商品可删除。
+- 在售或已售商品返回 400。
+- 删除时同时清理磁盘上的图片文件。
+- 不存在返回 404。
+
+**响应：**
+```json
+{
+  "message": "已删除",
+  "deleted_files": 2
+}
+```
+
+---
+
 ## 文件与导出接口（需登录）
 
 ### POST /api/upload
@@ -298,6 +435,30 @@
   "paths": ["/uploads/orders/abc123.webp"]
 }
 ```
+
+---
+
+### POST /api/upload/used
+
+后台上传二手家电图片。需 JWT。
+
+**限制：**
+- 文件类型：jpg/jpeg/png/webp
+- 单张最大：5MB
+- 单次最多：5 张
+- 文件名后端随机生成
+- 保存到 `backend/uploads/used/`
+
+**请求：** `multipart/form-data`，字段 `files`（支持多文件）
+
+**响应：**
+```json
+{
+  "paths": ["/uploads/used/abc123.webp"]
+}
+```
+
+**边界：** 不影响现有 `/api/upload` 维修照片上传。
 
 ---
 

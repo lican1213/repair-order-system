@@ -37,6 +37,7 @@ def on_startup():
     dirs = [
         BASE_DIR / "data",
         UPLOADS_DIR / "orders" / "temp",
+        UPLOADS_DIR / "used",
         UPLOADS_DIR / "warranty",
         STATIC_DIR,
     ]
@@ -95,6 +96,10 @@ app.include_router(orders.router, prefix="/api/orders", tags=["订单管理"])
 from app.routers import upload, export
 app.include_router(upload.router, prefix="/api/upload", tags=["文件上传"])
 app.include_router(export.router, prefix="/api/export", tags=["导出"])
+
+# 二手家电展示橱窗
+from app.routers import used_appliances
+app.include_router(used_appliances.router, prefix="/api", tags=["二手家电"])
 
 
 # --- 静态文件 ---

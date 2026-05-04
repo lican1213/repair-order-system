@@ -4,6 +4,8 @@ import ProtectedRoute from './routes/ProtectedRoute'
 import RepairForm from './pages/RepairForm'
 import RepairSuccess from './pages/RepairSuccess'
 import PricingPage from './pages/PricingPage'
+import UsedAppliancesPage from './pages/UsedAppliancesPage'
+import UsedApplianceDetail from './pages/UsedApplianceDetail'
 import WarrantyPage from './pages/WarrantyPage'
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
@@ -12,6 +14,7 @@ import OrderDetail from './pages/OrderDetail'
 import TodayOrders from './pages/TodayOrders'
 import FollowupList from './pages/FollowupList'
 import AdminProfile from './pages/AdminProfile'
+import AdminUsedAppliances from './pages/AdminUsedAppliances'
 
 function NotFound() {
   return (
@@ -36,6 +39,8 @@ export default function App() {
         <Route path="/repair" element={<RepairForm />} />
         <Route path="/repair/success" element={<RepairSuccess />} />
         <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/used" element={<UsedAppliancesPage />} />
+        <Route path="/used/:id" element={<UsedApplianceDetail />} />
         <Route path="/warranty/t/:token" element={<WarrantyPage />} />
 
         {/* 后台登录 */}
@@ -48,6 +53,7 @@ export default function App() {
           <Route path="/admin/orders/:id" element={<OrderDetail />} />
           <Route path="/admin/today" element={<TodayOrders />} />
           <Route path="/admin/followups" element={<FollowupList />} />
+          <Route path="/admin/used-appliances" element={<AdminUsedAppliances />} />
           <Route path="/admin/profile" element={<AdminProfile />} />
         </Route>
 

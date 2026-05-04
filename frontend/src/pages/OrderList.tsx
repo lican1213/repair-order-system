@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import BottomNav from '../components/BottomNav'
 import StatusBadge from '../components/StatusBadge'
@@ -22,6 +22,22 @@ export default function OrderList() {
   const followupFilter = searchParams.get('followup_status') || ''
   const keyword = searchParams.get('keyword') || ''
   const createdDateStart = searchParams.get('created_date_start') || ''
+
+  // Local keyword state for IME-friendly search (debounced sync to URL)
+  const [localKeyword, setLocalKeyword] = useState(keyword)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isComposingRef = useRef(false)
+
+  const handleKeywordChange = useCallback((value: string) => {
+    setLocalKeyword(value)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      const next = new URLSearchParams(searchParams)
+      if (value) next.set('keyword', value)
+      else next.delete('keyword')
+      setSearchParams(next)
+    }, 300)
+  }, [searchParams, setSearchParams])
   const createdDateEnd = searchParams.get('created_date_end') || ''
   const scheduledDateStart = searchParams.get('scheduled_date_start') || ''
   const scheduledDateEnd = searchParams.get('scheduled_date_end') || ''
@@ -154,8 +170,19 @@ export default function OrderList() {
           <input
             type="text"
             placeholder="搜索工单号/姓名/手机/小区..."
-            value={keyword}
-            onChange={(e) => updateParam('keyword', e.target.value)}
+            value={localKeyword}
+            onChange={(e) => handleKeywordChange(e.target.value)}
+            onCompositionStart={() => { isComposingRef.current = true }}
+            onCompositionEnd={(e) => {
+              isComposingRef.current = false
+              const value = (e.target as HTMLInputElement).value
+              setLocalKeyword(value)
+              if (debounceRef.current) clearTimeout(debounceRef.current)
+              const next = new URLSearchParams(searchParams)
+              if (value) next.set('keyword', value)
+              else next.delete('keyword')
+              setSearchParams(next)
+            }}
             className="min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm"
           />
 

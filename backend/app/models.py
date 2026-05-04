@@ -101,3 +101,23 @@ class RepairLog(Base):
 
     def __repr__(self):
         return f"<RepairLog order_id={self.order_id} {self.old_status}->{self.new_status}>"
+
+
+class UsedAppliance(Base):
+    __tablename__ = "used_appliances"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    title = Column(String(80), nullable=False)
+    category = Column(String(30), nullable=False, index=True)
+    brand_model = Column(String(80))
+    price = Column(String(30))
+    condition_note = Column(String(200))
+    description = Column(Text)
+    image_paths = Column(Text)
+    status = Column(String(20), default="在售", nullable=False, index=True)
+    contact_phone = Column(String(30))
+    created_at = Column(DateTime, default=_utcnow, nullable=False, index=True)
+    updated_at = Column(DateTime, default=_utcnow, onupdate=_utcnow, nullable=False)
+
+    def __repr__(self):
+        return f"<UsedAppliance {self.title}>"

@@ -169,6 +169,17 @@ export default function RepairForm() {
           <span className="shrink-0 text-lg leading-none" aria-hidden="true">›</span>
         </Link>
 
+        <Link
+          to="/used"
+          className="mb-4 flex min-h-[44px] items-center justify-between gap-3 rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-emerald-700 active:bg-emerald-100"
+        >
+          <span>
+            <span className="block text-sm font-semibold">查看二手家电</span>
+            <span className="mt-0.5 block text-xs text-emerald-600">在售二手家电展示，具体请电话咨询</span>
+          </span>
+          <span className="shrink-0 text-lg leading-none" aria-hidden="true">›</span>
+        </Link>
+
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">{error}</div>
         )}

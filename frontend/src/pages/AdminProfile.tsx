@@ -204,6 +204,15 @@ export default function AdminProfile() {
           )}
         </div>
 
+        <button
+          type="button"
+          onClick={() => navigate('/admin/used-appliances')}
+          className="mb-4 flex min-h-[44px] w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 text-left text-sm font-medium text-gray-700 active:bg-gray-50"
+        >
+          <span>二手家电管理</span>
+          <span className="text-gray-400">›</span>
+        </button>
+
         <Button variant="danger" fullWidth onClick={handleLogout}>
           退出登录
         </Button>

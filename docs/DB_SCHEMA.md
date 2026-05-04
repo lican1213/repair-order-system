@@ -131,6 +131,42 @@ token = secrets.token_urlsafe(16)
 
 ---
 
+## used_appliances 表
+
+二手家电展示橱窗表。只用于后台发布和公开展示，不承载交易、订单、支付或库存流水。
+
+| 字段 | 类型 | 约束 | 说明 |
+|------|------|------|------|
+| id | INTEGER | PK, AUTOINCREMENT | 自增主键 |
+| title | TEXT | NOT NULL | 商品标题 |
+| category | TEXT | NOT NULL, INDEX | 类别：空调/冰箱/洗衣机/热水器/电视/其他 |
+| brand_model | TEXT | | 品牌型号 |
+| price | TEXT | | 参考价文案，如“800元起”“面议”“电话咨询” |
+| condition_note | TEXT | | 成色说明 |
+| description | TEXT | | 补充说明 |
+| image_paths | TEXT | | 商品图片路径，JSON 数组字符串 |
+| status | TEXT | NOT NULL DEFAULT '在售', INDEX | 在售 / 已售 / 下架 |
+| contact_phone | TEXT | | 咨询电话；为空时前端可使用店铺电话 |
+| created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP, INDEX | 创建时间 |
+| updated_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 更新时间 |
+
+### 图片路径存储规则
+
+```json
+["/uploads/used/abc.jpg"]
+```
+
+### 公开展示规则
+
+- `GET /api/used-appliances` 只返回 `status=在售` 的商品。
+- `GET /api/used-appliances/{id}` 对已售、下架或不存在商品返回 404。
+- 后台 `/api/admin/used-appliances` 可查看全部状态。
+- `DELETE /api/admin/used-appliances/{id}` 仅允许删除 `status=下架` 的商品，同时清理关联图片文件。
+- `scripts/cleanup_used_appliances.py` 可定时清理已下架超过 N 天的商品及图片。
+- 不做库存数量字段，不做交易订单表，不做客户留言表。
+
+---
+
 ## 状态枚举
 
 ### 订单状态
@@ -158,6 +194,14 @@ token = secrets.token_urlsafe(16)
 
 空调 / 冰箱 / 洗衣机 / 热水器 / 燃气灶 / 电视 / 微波炉 / 油烟机 / 其他
 
+### 二手家电状态
+
+| 值 | 说明 |
+|----|------|
+| 在售 | 公开展示，客户可电话咨询 |
+| 已售 | 后台保留记录，公开页默认不展示 |
+| 下架 | 后台保留记录，公开接口不展示 |
+
 ---
 
 ## ER 关系
@@ -166,6 +210,8 @@ token = secrets.token_urlsafe(16)
 orders 1 ──── N repair_logs
   │
   └── warranty_token (独立查询入口)
+
+used_appliances 独立，不与 orders/users/repair_logs 建立外键关系。
 ```
 
 users 表独立，不与 orders 直接关联（单管理员场景）。

@@ -32,17 +32,18 @@ repair-order-system/
 │   ├── app/
 │   │   ├── main.py, config.py, database.py, models.py
 │   │   ├── schemas.py, auth.py, constants.py, rate_limit.py
-│   │   ├── routers/ (auth, public, orders, upload, export, warranty, password)
+│   │   ├── routers/ (auth, public, orders, upload, export, warranty, password, used_appliances)
 │   │   └── static/ (React build output)
 │   ├── data/ (SQLite)
-│   ├── uploads/ (orders/, orders/temp/, warranty/)
+│   ├── uploads/ (orders/, orders/temp/, used/, warranty/)
 │   ├── seed.py, requirements.txt, .env.example
 ├── frontend/
 │   ├── src/ (api/, pages/, components/, hooks/, routes/, types/, utils/)
 │   ├── vite.config.ts, package.json, tsconfig.json
 ├── scripts/
 │   ├── backup.py (一键备份 db + uploads)
-│   └── cleanup_temp_images.py (清理过期临时图片)
+│   ├── cleanup_temp_images.py (清理过期临时图片)
+│   └── cleanup_used_appliances.py (清理已下架二手家电及图片)
 ├── backups/ (gitignored)
 └── docs/
 ```
@@ -84,20 +85,25 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 | v1.0（Phase 0-12） | ✅ 完成 | 全部 12 Phase 通过，Codex 审计 PASS_WITH_FIXES，复审 PASS |
 | Mobile Hotfix | ✅ 完成 | 七轮修复全部通过（2026-05-03） |
 | v1.1 | ✅ 完成 | 备份/清理/限频/改密，14/14 端点 PASS，Codex 审计 PASS（2026-05-03） |
+| v1.3：二手家电展示橱窗 | ✅ 完成 | 公开 `/used` + 后台 `/admin/used-appliances`，独立审计 PASS（2026-05-04） |
 
 ## v1.1 交付状态
 
 v1.1 已于 2026-05-03 开发完成并通过 Codex 审计（**PASS**）。详见 `docs/V1_1_PLAN.md` 和 `docs/V1_1_AUDIT_REPORT.md`。
 
+## v1.3 交付状态
+
+v1.3 已于 2026-05-04 开发完成并通过独立审计（**PASS**）。详见 `docs/USED_APPLIANCES_AUDIT_REPORT.md`。
+
 ## 下一步
 
-项目已完成 v1.0 + v1.1 开发，当前状态为**交付前准备**：
+项目已完成 v1.0 + v1.1 + v1.3 开发，v1.3 已通过独立审计：
 
-1. 交付前最终 smoke test
-2. GitHub release / tag
+1. 打 v1.3 tag
+2. 线上灰度观察（见 `docs/REAL_DEVICE_TEST_PLAN.md`）
 3. 部署准备（Caddy + HTTPS + systemd，确认 X-Forwarded-For 信任边界）
-4. 真实使用期观察（见 `docs/REAL_DEVICE_TEST_PLAN.md`）
-5. v1.2 只在有真实需求后再规划
+4. v1.2 只在有真实需求后再规划
+5. 二手家电展示橱窗后续不得扩展成商城系统
 
 ## v1.0 边界（不可随意扩展）
 

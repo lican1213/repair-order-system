@@ -2,9 +2,43 @@
 
 ## 当前状态
 
-**v1.1 开发完成，线上灰度使用和小型内容更新中** — 2026-05-04。
+**v1.3 二手家电展示橱窗已完成独立审计（PASS），可打 tag 并灰度上线** — 2026-05-04。
 
-v1.0 全部 12 个 Phase 通过。Codex 独立审计结论：**PASS_WITH_FIXES**，audit fixes 已通过 Codex 复审（**PASS**）。Mobile Hotfix 七轮已完成。v1.1 四项增强全部实现并通过回归测试（14/14 端点 PASS）。2026-05-04 完成部署前稳定性小修：SQLite WAL + busy_timeout、Caddy HTTPS 部署 runbook、cron 自动备份说明。同日新增公开清洗服务价格表 `/pricing`，属于静态前端内容更新，不涉及后端 API 或数据库。详细计划见 `docs/V1_1_PLAN.md`。
+v1.0 全部 12 个 Phase 通过。Codex 独立审计结论：**PASS_WITH_FIXES**，audit fixes 已通过 Codex 复审（**PASS**）。Mobile Hotfix 七轮已完成。v1.1 四项增强全部实现并通过回归测试（14/14 端点 PASS）。2026-05-04 完成部署前稳定性小修：SQLite WAL + busy_timeout、Caddy HTTPS 部署 runbook、cron 自动备份说明。同日新增公开清洗服务价格表 `/pricing`。v1.3 新增二手家电展示橱窗 `/used` 和后台 `/admin/used-appliances`，坚持展示 + 电话咨询，不做商城交易闭环。v1.3 独立审计 **PASS**，审计期间修复 2 个 bug（上传按钮、多图预览）。
+
+## v1.3 二手家电展示橱窗实施
+
+| Phase | 状态 | 日期 | 说明 |
+|-------|------|------|------|
+| Phase 1 后端 API 与上传 | 完成 | 2026-05-04 | 新增 `used_appliances` 表模型、公开只读 API、后台 JWT API、`/api/upload/used`；后端 unittest 和 compileall 通过 |
+| Phase 2 前端页面 | 完成 | 2026-05-04 | 新增公开 `/used`、后台 `/admin/used-appliances`、报修页入口、后台 dashboard/profile 入口；lint/build 通过 |
+| Phase 3 文档更新 | 完成 | 2026-05-04 | 同步 CLAUDE/README/API/DB/TODO/DECISIONS/报告等项目上下文 |
+| Phase 4 完整验证与审计自检 | 完成 | 2026-05-04 | compileall、后端 API smoke、frontend lint/build、浏览器 dev 流程、生产 SPA fallback 均通过 |
+
+## v1.3 二手家电展示橱窗验证
+
+| 测试项 | 结果 | 日期 |
+|--------|------|------|
+| `python -m unittest tests.test_used_appliances_api -v` | PASS | 2026-05-04 |
+| `python -m compileall app` | PASS | 2026-05-04 |
+| 后端 API smoke on 8000 | PASS | 2026-05-04 |
+| 未登录后台二手家电接口 | PASS，401 | 2026-05-04 |
+| 公开接口只展示在售 | PASS | 2026-05-04 |
+| 下架商品公开详情 404 | PASS | 2026-05-04 |
+| `POST /api/upload/used` | PASS | 2026-05-04 |
+| `npm run lint` | PASS | 2026-05-04 |
+| `npm run build` | PASS | 2026-05-04 |
+| 浏览器 `/used`、后台管理、上传、预览、电话咨询、状态隐藏 | PASS | 2026-05-04 |
+| `/repair`、`/pricing`、`/admin/orders`、`/warranty/t/:token` 回归 | PASS | 2026-05-04 |
+| 生产模式 `/used`、`/admin/used-appliances`、`/api/used-appliances` | PASS | 2026-05-04 |
+| 独立审计（数据库/API/前端/安全/回归/文档） | PASS | 2026-05-04 |
+| 修复：后台上传按钮无反应（label→div+useRef） | 已修复 | 2026-05-04 |
+| 修复：公开页多图预览只显示第一张（ImagePreviewModal gallery） | 已修复 | 2026-05-04 |
+| 修复后 lint/build/unittest 回归 | PASS | 2026-05-04 |
+| 新增 DELETE 端点（仅下架可删，清理图片文件） | 已实现 | 2026-05-04 |
+| 新增 scripts/cleanup_used_appliances.py 定时清理脚本 | 已实现 | 2026-05-04 |
+| 后台新增删除按钮（仅下架商品显示） | 已实现 | 2026-05-04 |
+| 修改后 lint/build/compileall/unittest 回归 | PASS | 2026-05-04 |
 
 ## 线上灰度内容更新
 
