@@ -92,7 +92,7 @@ npm run build
 
 ```powershell
 cd backend
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
 **访问：**
@@ -152,6 +152,18 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 只备份数据库不够，因为图片文件存储在 uploads 目录。
 
+一键备份：
+
+```powershell
+python scripts/backup.py
+```
+
+`scripts/backup.py` 默认保留最近 7 份备份。服务器部署时建议使用 cron 每天 03:00 自动备份，并定期将 `backups/` 下载到本地或网盘：
+
+```cron
+0 3 * * * cd /home/youruser/repair-order-system && /home/youruser/repair-order-system/backend/.venv/bin/python scripts/backup.py >> logs/backup.log 2>&1
+```
+
 ## 常用命令
 
 ```powershell
@@ -190,7 +202,16 @@ your-domain.com {
 }
 ```
 
-FastAPI 监听 127.0.0.1:8000，Caddy 负责 HTTPS 和反向代理。
+生产环境边界：
+
+- 域名 DNS A 记录指向服务器公网 IP。
+- Caddy 监听 `80/443`，负责 HTTPS 和反向代理。
+- Caddy `reverse_proxy 127.0.0.1:8000`。
+- FastAPI 由 systemd 启动并监听 `127.0.0.1:8000`。
+- 不直接开放 `8000` 到公网。
+- 安全组/防火墙只开放 `22`、`80`、`443`。
+
+完整步骤见 `docs/DEPLOYMENT_RUNBOOK.md`。
 
 **安全提示：** 公开接口限频使用 `X-Forwarded-For` 头识别客户端 IP。必须通过反向代理（Caddy/Nginx）暴露服务，且 FastAPI 只监听 `127.0.0.1`。若直接将 FastAPI 暴露到公网，客户端可伪造该头绕过 IP 限频。
 

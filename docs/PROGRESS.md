@@ -4,7 +4,26 @@
 
 **v1.1 开发完成** — 2026-05-03。
 
-v1.0 全部 12 个 Phase 通过。Codex 独立审计结论：**PASS_WITH_FIXES**，audit fixes 已通过 Codex 复审（**PASS**）。Mobile Hotfix 七轮已完成。v1.1 四项增强全部实现并通过回归测试（14/14 端点 PASS）。详细计划见 `docs/V1_1_PLAN.md`。
+v1.0 全部 12 个 Phase 通过。Codex 独立审计结论：**PASS_WITH_FIXES**，audit fixes 已通过 Codex 复审（**PASS**）。Mobile Hotfix 七轮已完成。v1.1 四项增强全部实现并通过回归测试（14/14 端点 PASS）。2026-05-04 完成部署前稳定性小修：SQLite WAL + busy_timeout、Caddy HTTPS 部署 runbook、cron 自动备份说明。详细计划见 `docs/V1_1_PLAN.md`。
+
+## 部署前稳定性小修
+
+| 项目 | 状态 | 日期 | 说明 |
+|------|------|------|------|
+| SQLite WAL | 完成 | 2026-05-04 | SQLAlchemy SQLite 连接启用 `PRAGMA journal_mode=WAL` |
+| SQLite busy_timeout | 完成 | 2026-05-04 | SQLite 连接启用 `PRAGMA busy_timeout=5000` |
+| Caddy HTTPS 部署说明 | 完成 | 2026-05-04 | 新增 `docs/DEPLOYMENT_RUNBOOK.md`，明确 80/443、127.0.0.1:8000、防火墙、DNS |
+| cron 自动备份说明 | 完成 | 2026-05-04 | runbook/README 明确每日备份 repair.db + uploads、默认保留 7 份、部署前手动运行、定期外部下载 |
+
+## 部署前稳定性小修验证
+
+| 测试项 | 结果 | 日期 |
+|--------|------|------|
+| SQLite `PRAGMA journal_mode` | PASS (`wal`) | 2026-05-04 |
+| SQLite `PRAGMA busy_timeout` | PASS (`5000`) | 2026-05-04 |
+| `python -m compileall app` | PASS | 2026-05-04 |
+| `GET /api/health` on port 8000 | PASS (`{"status":"ok"}`) | 2026-05-04 |
+| `scripts/backup.py --help` | PASS (default keep 7) | 2026-05-04 |
 
 | 轮次 | 修复内容 | 日期 |
 |------|---------|------|

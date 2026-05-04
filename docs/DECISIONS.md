@@ -522,3 +522,33 @@
 - 滥用风险极低，无写入操作，无敏感数据
 - 每次页面加载都会调用，限频会影响正常用户体验
 - 保持实现简单，只对有写入副作用的接口限频
+
+## 部署前稳定性小修决策
+
+### D-059: SQLite 连接启用 WAL 和 busy_timeout
+
+**决策：** 在 SQLAlchemy SQLite 连接事件中设置 `PRAGMA journal_mode=WAL` 和 `PRAGMA busy_timeout=5000`。
+
+**理由：**
+- 小店场景继续使用 SQLite，不引入 PostgreSQL/Redis/Docker
+- WAL 可降低读写互相阻塞的概率
+- `busy_timeout=5000` 让短时间锁等待有 5 秒缓冲
+- 只对 SQLite 生效，不改变 SessionLocal/Base/init_db，不改变表结构，不引入迁移系统
+
+### D-060: 生产环境使用 Caddy 反代本机 FastAPI
+
+**决策：** 生产环境 Caddy 监听公网 `80/443`，反向代理到 `127.0.0.1:8000`；FastAPI systemd 服务只监听 `127.0.0.1:8000`。
+
+**理由：**
+- Caddy 自动处理 HTTPS 证书
+- FastAPI 不直接暴露公网，避免 `X-Forwarded-For` 被客户端伪造
+- 安全组/防火墙只开放 `22`、`80`、`443`，部署边界清晰
+
+### D-061: cron 每日自动备份数据库和上传文件
+
+**决策：** 使用系统 cron 每天调用 `scripts/backup.py`，同时备份 `backend/data/repair.db` 和 `backend/uploads/`，默认保留最近 7 份备份。
+
+**理由：**
+- 图片文件和数据库同等重要，只备份数据库会丢失维修图片
+- cron 不引入额外服务，符合轻量部署目标
+- 每日一次、保留 7 份适合当前小店数据量和恢复需求

@@ -74,7 +74,7 @@ cd frontend
 npm run build
 # 输出到 backend/app/static/
 cd ../backend
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
 ## Current Progress Summary
@@ -84,6 +84,7 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 | v1.0（Phase 0-12） | ✅ 完成 | 全部 12 个 Phase 通过，Codex 审计 PASS_WITH_FIXES，复审 PASS |
 | Mobile Hotfix | ✅ 完成 | 七轮修复全部通过（2026-05-03） |
 | v1.1 | ✅ 完成 | 4 项增强（备份/清理/限频/改密），14/14 端点 PASS，Codex 审计 PASS（2026-05-03） |
+| 部署前稳定性小修 | ✅ 完成 | SQLite WAL/busy_timeout、Caddy HTTPS runbook、cron 备份说明（2026-05-04） |
 
 ## 版本交付状态
 
@@ -111,7 +112,7 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 1. 交付前最终 smoke test
 2. GitHub release / tag
-3. 部署准备（Caddy + HTTPS + systemd，确认 X-Forwarded-For 信任边界）
+3. 部署准备（Caddy + HTTPS + systemd，确认 X-Forwarded-For 信任边界；见 `docs/DEPLOYMENT_RUNBOOK.md`）
 4. 真实使用期观察（见 `docs/REAL_DEVICE_TEST_PLAN.md`）
 5. v1.2 只在有真实需求后再规划
 

@@ -165,9 +165,9 @@ def main() -> None:
     parser.add_argument(
         "--keep",
         type=int,
-        default=10,
+        default=7,
         metavar="N",
-        help="Number of recent backups to retain (default: 10)",
+        help="Number of recent backups to retain (default: 7)",
     )
     args = parser.parse_args()
 
