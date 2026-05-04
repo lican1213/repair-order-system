@@ -4,6 +4,7 @@ import { getPublicUsedAppliances } from '../api/usedAppliances'
 import { getShopInfo } from '../api/public'
 import type { UsedAppliance } from '../types/usedAppliance'
 import type { ShopInfoResponse } from '../types/public'
+import { canUseNativeShare, shareOrCopy } from '../utils/share'
 
 const DISCLAIMER = '二手家电价格、成色和库存变动较快，页面信息仅供参考。具体价格、成色、配送、安装和售后说明以电话沟通确认为准。'
 
@@ -38,38 +39,22 @@ export default function UsedAppliancesPage() {
 
   const shopPhone = shopInfo?.shop_phone || ''
 
-  const handleShare = async (item: UsedAppliance) => {
+  const buildShareData = (item: UsedAppliance) => {
     const url = `${window.location.origin}/used/${item.id}`
-
-    if ('share' in navigator) {
-      const text = `${item.title} | ${item.category}${item.brand_model ? ` · ${item.brand_model}` : ''} | ${item.price || '电话咨询'}`
-      try {
-        await navigator.share({ title: item.title, text, url })
-        return
-      } catch {
-        // User cancelled or share failed, fall through to copy
-      }
+    const text = `${item.title} | ${item.category}${item.brand_model ? ` · ${item.brand_model}` : ''} | ${item.price || '电话咨询'}`
+    return {
+      url,
+      data: { title: item.title, text, url },
     }
+  }
 
-    // Copy link only
-    try {
-      await navigator.clipboard.writeText(url)
+  const handleShare = async (item: UsedAppliance) => {
+    const { data, url } = buildShareData(item)
+    const result = await shareOrCopy(data, url)
+    if (result === 'copied') {
       setCopiedId(item.id)
       setTimeout(() => setCopiedId(null), 2000)
-      return
-    } catch {
-      // Fall through to legacy method
     }
-
-    const ta = document.createElement('textarea')
-    ta.value = url
-    ta.style.cssText = 'position:fixed;left:-9999px'
-    document.body.appendChild(ta)
-    ta.select()
-    document.execCommand('copy')
-    document.body.removeChild(ta)
-    setCopiedId(item.id)
-    setTimeout(() => setCopiedId(null), 2000)
   }
 
   return (
@@ -126,6 +111,7 @@ export default function UsedAppliancesPage() {
           {items.map((item) => {
             const phone = item.contact_phone || shopPhone
             const mainImage = item.image_paths[0]
+            const shareData = buildShareData(item).data
             return (
               <article key={item.id} className="overflow-hidden rounded-lg border border-gray-200 bg-white">
                 {mainImage ? (
@@ -179,7 +165,7 @@ export default function UsedAppliancesPage() {
                       onClick={(e) => { e.stopPropagation(); void handleShare(item) }}
                       className="min-h-[44px] rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 active:bg-gray-50"
                     >
-                      {copiedId === item.id ? '已复制链接' : ('share' in navigator ? '分享' : '复制链接')}
+                      {copiedId === item.id ? '已复制链接' : (canUseNativeShare(shareData) ? '分享' : '复制链接')}
                     </button>
                   </div>
                 </div>

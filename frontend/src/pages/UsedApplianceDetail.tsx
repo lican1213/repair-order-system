@@ -5,6 +5,7 @@ import { getPublicUsedAppliance } from '../api/usedAppliances'
 import { getShopInfo } from '../api/public'
 import type { UsedAppliance } from '../types/usedAppliance'
 import type { ShopInfoResponse } from '../types/public'
+import { canUseNativeShare, shareOrCopy } from '../utils/share'
 
 const DISCLAIMER = '二手家电价格、成色和库存变动较快，页面信息仅供参考。具体价格、成色、配送、安装和售后说明以电话沟通确认为准。'
 
@@ -41,36 +42,15 @@ export default function UsedApplianceDetail() {
   }, [id])
 
   const handleShare = async () => {
+    if (!item) return
+
     const url = window.location.href
-
-    if ('share' in navigator && item) {
-      const text = `${item.title} | ${item.category}${item.brand_model ? ` · ${item.brand_model}` : ''} | ${item.price || '电话咨询'}`
-      try {
-        await navigator.share({ title: item.title, text, url })
-        return
-      } catch {
-        // cancelled, fall through
-      }
-    }
-
-    try {
-      await navigator.clipboard.writeText(url)
+    const text = `${item.title} | ${item.category}${item.brand_model ? ` · ${item.brand_model}` : ''} | ${item.price || '电话咨询'}`
+    const result = await shareOrCopy({ title: item.title, text, url }, url)
+    if (result === 'copied') {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
-      return
-    } catch {
-      // fall through
     }
-
-    const ta = document.createElement('textarea')
-    ta.value = url
-    ta.style.cssText = 'position:fixed;left:-9999px'
-    document.body.appendChild(ta)
-    ta.select()
-    document.execCommand('copy')
-    document.body.removeChild(ta)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
   }
 
   if (loading) {
@@ -93,6 +73,8 @@ export default function UsedApplianceDetail() {
   }
 
   const phone = item.contact_phone || shopInfo?.shop_phone || ''
+  const shareText = `${item.title} | ${item.category}${item.brand_model ? ` · ${item.brand_model}` : ''} | ${item.price || '电话咨询'}`
+  const shareData = { title: item.title, text: shareText, url: window.location.href }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-8">
@@ -105,7 +87,7 @@ export default function UsedApplianceDetail() {
             onClick={() => void handleShare()}
             className="text-sm text-gray-700 border border-gray-200 rounded-lg px-3 py-1.5 active:bg-gray-50"
           >
-            {copied ? '已复制链接' : ('share' in navigator ? '分享' : '复制链接')}
+            {copied ? '已复制链接' : (canUseNativeShare(shareData) ? '分享' : '复制链接')}
           </button>
         </div>
 
