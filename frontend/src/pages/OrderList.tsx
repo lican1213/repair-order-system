@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import BottomNav from '../components/BottomNav'
 import StatusBadge from '../components/StatusBadge'
 import { getOrders, exportOrders } from '../api/orders'
-import { ORDER_STATUSES, FOLLOWUP_STATUSES } from '../utils/constants'
+import { ORDER_STATUSES, FOLLOWUP_STATUSES, SERVICE_TYPES } from '../utils/constants'
 import type { Order } from '../types/order'
 
 export default function OrderList() {
@@ -20,6 +20,7 @@ export default function OrderList() {
 
   const statusFilter = searchParams.get('status') || ''
   const followupFilter = searchParams.get('followup_status') || ''
+  const serviceTypeFilter = searchParams.get('service_type') || ''
   const keyword = searchParams.get('keyword') || ''
   const createdDateStart = searchParams.get('created_date_start') || ''
 
@@ -48,6 +49,7 @@ export default function OrderList() {
     void getOrders({
       status: statusFilter || undefined,
       followup_status: followupFilter || undefined,
+      service_type: serviceTypeFilter === '维修' || serviceTypeFilter === '清洗' ? serviceTypeFilter : undefined,
       keyword: keyword || undefined,
       created_date_start: createdDateStart || undefined,
       created_date_end: createdDateEnd || undefined,
@@ -76,7 +78,7 @@ export default function OrderList() {
     return () => {
       cancelled = true
     }
-  }, [statusFilter, followupFilter, keyword, createdDateStart, createdDateEnd, scheduledDateStart, scheduledDateEnd])
+  }, [statusFilter, followupFilter, serviceTypeFilter, keyword, createdDateStart, createdDateEnd, scheduledDateStart, scheduledDateEnd])
 
   const loadMore = async () => {
     setLoading(true)
@@ -84,6 +86,7 @@ export default function OrderList() {
       const res = await getOrders({
         status: statusFilter || undefined,
         followup_status: followupFilter || undefined,
+        service_type: serviceTypeFilter === '维修' || serviceTypeFilter === '清洗' ? serviceTypeFilter : undefined,
         keyword: keyword || undefined,
         created_date_start: createdDateStart || undefined,
         created_date_end: createdDateEnd || undefined,
@@ -119,6 +122,7 @@ export default function OrderList() {
       const blob = await exportOrders({
         status: statusFilter || undefined,
         followup_status: followupFilter || undefined,
+        service_type: serviceTypeFilter === '维修' || serviceTypeFilter === '清洗' ? serviceTypeFilter : undefined,
         keyword: keyword || undefined,
         created_date_start: createdDateStart || undefined,
         created_date_end: createdDateEnd || undefined,
@@ -165,6 +169,15 @@ export default function OrderList() {
           >
             <option value="">全部回访状态</option>
             {FOLLOWUP_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+
+          <select
+            value={serviceTypeFilter}
+            onChange={(e) => updateParam('service_type', e.target.value)}
+            className="min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm"
+          >
+            <option value="">全部服务类型</option>
+            {SERVICE_TYPES.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
 
           <input
@@ -249,7 +262,7 @@ export default function OrderList() {
               </div>
               <div className="font-medium">{order.customer_name}</div>
               <div className="text-sm text-gray-600">
-                {order.appliance_type}{order.brand_model ? ` · ${order.brand_model}` : ''}
+                {order.service_type} · {order.appliance_type}{order.brand_model ? ` · ${order.brand_model}` : ''}
               </div>
               <div className="text-sm text-gray-500 truncate">{order.fault_description}</div>
               <div className="text-xs text-gray-400 mt-1">

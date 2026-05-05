@@ -63,14 +63,22 @@ SECRET_KEY=<用 python -c "import secrets; print(secrets.token_urlsafe(32))" 生
 ADMIN_PASSWORD=<强密码>
 SHOP_NAME=你的店铺名称
 SHOP_PHONE=你的联系电话
+APP_BASE_URL=https://your-domain.com
 
 # 当前正式部署版不启用地图定位或逆地理编码。
 # 地址由客户填写小区和详细地址，师傅上门前电话确认。
+
+# 可选：新订单 Webhook 通知，默认关闭。
+# 开启后只发送脱敏的新单摘要，失败不影响客户下单。
+ORDER_WEBHOOK_ENABLED=false
+ORDER_WEBHOOK_URL=
+ORDER_WEBHOOK_TIMEOUT_SECONDS=3
 ```
 
 **安全提醒：**
 - `.env` 文件不得提交到 Git（已在 `.gitignore` 排除）。
 - 不需要配置高德、百度、腾讯等地图 Key。
+- 如启用 Webhook，`ORDER_WEBHOOK_URL` 应使用 HTTPS，并确认接收端不会把通知内容公开。
 
 ## 5. 自动备份 cron
 

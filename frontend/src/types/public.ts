@@ -1,8 +1,11 @@
+import type { ServiceType } from './order'
+
 export interface RepairSubmitRequest {
   customer_name: string
   phone: string
   community: string
   address: string
+  service_type: ServiceType
   appliance_type: string
   brand_model?: string
   fault_description: string

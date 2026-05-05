@@ -187,6 +187,7 @@ export default function OrderDetail() {
         <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
           <h3 className="font-bold mb-2">家电信息</h3>
           <div className="space-y-2 text-sm">
+            <div className="flex justify-between"><span className="text-gray-500">服务类型</span><span>{order.service_type}</span></div>
             <div className="flex justify-between"><span className="text-gray-500">类型</span><span>{order.appliance_type}</span></div>
             {order.brand_model && <div className="flex justify-between"><span className="text-gray-500">品牌型号</span><span>{order.brand_model}</span></div>}
             <div className="flex justify-between"><span className="text-gray-500">故障</span><span className="text-right max-w-[60%]">{order.fault_description}</span></div>

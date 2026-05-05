@@ -5,9 +5,11 @@ import Input from '../components/Input'
 import Select from '../components/Select'
 import TextArea from '../components/TextArea'
 import ImageUploader from '../components/ImageUploader'
-import { APPLIANCE_TYPES } from '../utils/constants'
+import { APPLIANCE_TYPES, SERVICE_TYPES } from '../utils/constants'
 import { getTodayDateString, isPastDate, isPastPreferredSlot, getTodaySlotHint } from '../utils/date'
+import { getFaultDescriptionCopy } from '../utils/orderCopy'
 import { submitRepair } from '../api/public'
+import type { ServiceType } from '../types/order'
 
 const TIME_SLOTS = [
   '上午 8:00-12:00',
@@ -22,11 +24,22 @@ export default function RepairForm() {
   const [error, setError] = useState('')
   const [imagePaths, setImagePaths] = useState<string[]>([])
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    customer_name: string
+    phone: string
+    community: string
+    address: string
+    service_type: ServiceType
+    appliance_type: string
+    brand_model: string
+    fault_description: string
+    is_urgent: boolean
+  }>({
     customer_name: '',
     phone: '',
     community: '',
     address: '',
+    service_type: SERVICE_TYPES[0],
     appliance_type: APPLIANCE_TYPES[0],
     brand_model: '',
     fault_description: '',
@@ -99,7 +112,8 @@ export default function RepairForm() {
     }
     if (!form.community.trim()) errors.community = '请填写小区'
     if (!form.address.trim()) errors.address = '请填写详细地址'
-    if (!form.fault_description.trim()) errors.fault_description = '请描述故障'
+    const faultCopy = getFaultDescriptionCopy(form.service_type)
+    if (!form.fault_description.trim()) errors.fault_description = faultCopy.error
     if (form.appliance_type === '其他' && !form.brand_model.trim()) errors.brand_model = '选择"其他"时，请填写具体家电类型或品牌型号'
 
     // 日期/时间段校验
@@ -147,6 +161,7 @@ export default function RepairForm() {
 
   const phoneError = getPhoneError(form.phone)
   const todaySlotHint = getTodaySlotHint(preferredDate)
+  const faultCopy = getFaultDescriptionCopy(form.service_type)
   // 判断时间段是否应禁用
   const isSlotDisabled = (slot: string) => {
     if (preferredDate !== getTodayDateString()) return false
@@ -185,6 +200,27 @@ export default function RepairForm() {
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* 服务类型 */}
+          <div>
+            <label className="text-sm font-medium text-gray-700 mb-2 block">服务类型 *</label>
+            <div className="grid grid-cols-2 gap-2">
+              {SERVICE_TYPES.map((serviceType) => (
+                <button
+                  key={serviceType}
+                  type="button"
+                  onClick={() => update('service_type', serviceType)}
+                  className={`min-h-[52px] rounded-lg border px-4 py-3 text-base font-semibold transition-colors ${
+                    form.service_type === serviceType
+                      ? 'border-blue-600 bg-blue-600 text-white'
+                      : 'border-gray-300 bg-white text-gray-700 active:bg-gray-50'
+                  }`}
+                >
+                  {serviceType}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* 姓名/称呼 */}
           <div ref={(el) => { fieldRefs.current.customer_name = el }}>
             <Input label="姓名 / 称呼 *" placeholder="例如：刘小姐、任先生、张老板" value={form.customer_name} onChange={(e) => update('customer_name', e.target.value)} />
@@ -231,7 +267,7 @@ export default function RepairForm() {
 
           {/* 故障描述 */}
           <div ref={(el) => { fieldRefs.current.fault_description = el }}>
-            <TextArea label="故障描述 *" placeholder="请描述家电故障情况" value={form.fault_description} onChange={(e) => update('fault_description', e.target.value)} />
+            <TextArea label={faultCopy.label} placeholder={faultCopy.placeholder} value={form.fault_description} onChange={(e) => update('fault_description', e.target.value)} />
             {fieldErrors.fault_description && <p className="text-red-600 text-sm mt-1">{fieldErrors.fault_description}</p>}
           </div>
 
@@ -278,7 +314,7 @@ export default function RepairForm() {
           <ImageUploader maxFiles={5} onChange={(paths) => setImagePaths(paths)} />
 
           <Button type="submit" fullWidth disabled={loading}>
-            {loading ? '提交中...' : '提交报修'}
+            {loading ? '提交中...' : `提交${form.service_type}申请`}
           </Button>
         </form>
       </div>

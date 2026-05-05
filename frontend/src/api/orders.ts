@@ -1,9 +1,17 @@
 import client from './client'
-import type { Order, OrderListResponse, DashboardSummary, OrderUpdateRequest } from '../types/order'
+import type {
+  DashboardSummary,
+  NewOrderNotificationResponse,
+  Order,
+  OrderListResponse,
+  OrderUpdateRequest,
+  ServiceType,
+} from '../types/order'
 
 interface OrderListParams {
   status?: string
   followup_status?: string
+  service_type?: ServiceType
   created_date_start?: string
   created_date_end?: string
   scheduled_date_start?: string
@@ -43,9 +51,17 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   return res.data
 }
 
+export async function getNewOrderNotifications(afterId: number): Promise<NewOrderNotificationResponse> {
+  const res = await client.get<NewOrderNotificationResponse>('/api/orders/notifications/new', {
+    params: { after_id: afterId },
+  })
+  return res.data
+}
+
 interface ExportParams {
   status?: string
   followup_status?: string
+  service_type?: ServiceType
   created_date_start?: string
   created_date_end?: string
   scheduled_date_start?: string

@@ -23,6 +23,7 @@ class Order(Base):
     address = Column(String(200), nullable=False)
 
     # 家电信息
+    service_type = Column(String(20), default="维修", nullable=False, index=True)
     appliance_type = Column(String(50), nullable=False)
     brand_model = Column(String(100))
     fault_description = Column(Text, nullable=False)

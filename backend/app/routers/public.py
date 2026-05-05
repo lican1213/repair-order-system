@@ -6,13 +6,14 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.config import settings, BASE_DIR
 from app.constants import APPLIANCE_TYPES
 from app.database import get_db
 from app.models import Order
+from app.notification import build_order_created_payload, send_order_created_webhook
 from app.rate_limit import limiter
 from app.schemas import (
     PublicUploadResponse,
@@ -170,7 +171,12 @@ async def upload_images(files: list[UploadFile], request: Request):
 
 
 @router.post("/submit", response_model=RepairSubmitResponse)
-def submit_repair(req: RepairSubmitRequest, request: Request, db: Session = Depends(get_db)):
+def submit_repair(
+    req: RepairSubmitRequest,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
     """客户提交报修（无需登录）。"""
     # Rate limit: 5 per IP per minute + 3 per phone per 10 minutes
     client_ip = _get_client_ip(request)
@@ -235,6 +241,7 @@ def submit_repair(req: RepairSubmitRequest, request: Request, db: Session = Depe
         phone=req.phone,
         community=req.community,
         address=req.address,
+        service_type=req.service_type,
         appliance_type=req.appliance_type,
         brand_model=req.brand_model,
         fault_description=req.fault_description,
@@ -251,6 +258,12 @@ def submit_repair(req: RepairSubmitRequest, request: Request, db: Session = Depe
 
     db.add(order)
     db.commit()
+    db.refresh(order)
+
+    background_tasks.add_task(
+        send_order_created_webhook,
+        build_order_created_payload(order),
+    )
 
     return RepairSubmitResponse(
         order_no=order_no,

@@ -53,6 +53,7 @@
   "phone": "13800138000",
   "community": "阳光小区",
   "address": "3号楼2单元501",
+  "service_type": "维修",
   "appliance_type": "空调",
   "brand_model": "格力 KFR-35GW",
   "fault_description": "不制冷，外机异响",
@@ -62,9 +63,11 @@
 }
 ```
 
-**必填字段：** customer_name, phone, community, address, appliance_type, fault_description
+**必填字段：** customer_name, phone, community, address, appliance_type, fault_description。`service_type` 不传时兼容为“维修”。
 
 **phone 校验：** 必须为 11 位纯数字，以 1 开头。不符合返回 422。
+
+**service_type 校验：** 后端强校验，只允许 `维修` / `清洗`。前端限制不能替代后端校验。
 
 **兼容字段：** latitude, longitude, location_address 为历史兼容可选字段，当前前端不主动采集、不主动提交。
 
@@ -274,6 +277,7 @@
 |------|------|------|
 | status | string | 按订单状态筛选 |
 | followup_status | string | 按回访状态筛选 |
+| service_type | string | 按服务类型筛选，可选 维修 / 清洗 |
 | created_date | string | 按创建日期筛选 (YYYY-MM-DD) |
 | scheduled_date | string | 按预约日期筛选 (YYYY-MM-DD) |
 | keyword | string | 搜索工单编号/客户名/手机/小区/地址/家电类型 |
@@ -301,6 +305,40 @@
 ### GET /api/orders/followups
 
 待回访。`status=已完成 AND followup_status=未回访`，按 `completed_at` 升序。
+
+---
+
+### GET /api/orders/notifications/new
+
+后台页面打开期间的新订单提醒接口。不是完整未读系统，不保存跨设备未读状态。
+
+**查询参数：**
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| after_id | int | 只返回 id 大于该值的新订单，默认 0 |
+
+**响应：**
+```json
+{
+  "count": 1,
+  "latest_id": 12,
+  "orders": [
+    {
+      "id": 12,
+      "order_no": "WX20260505001",
+      "service_type": "清洗",
+      "appliance_type": "油烟机",
+      "community": "阳光小区",
+      "is_urgent": false,
+      "created_at": "2026-05-05T10:30:00"
+    }
+  ]
+}
+```
+
+前端每次成功轮询后使用 `latest_id` 更新下一次的 `after_id` 基线。轮询失败不得影响后台正常使用。
+
+**隐私边界：** `orders` 只返回新单提醒摘要，不返回 `customer_name`、`phone`、完整 `address`、`fault_description`、维修记录、收费、保修 token、图片或内部备注。
 
 ---
 
@@ -464,9 +502,37 @@
 
 ### GET /api/export/orders
 
-导出 Excel。支持与 GET /api/orders 相同的筛选参数。
+导出 Excel。支持与 GET /api/orders 相同的筛选参数，包括 `service_type`。
 
 **响应：** `.xlsx` 文件下载
+
+---
+
+## 新订单 Webhook（可选，默认关闭）
+
+Webhook 不是公开 API；由后端在客户提交订单成功后异步向 `ORDER_WEBHOOK_URL` 发起 `POST`。失败只记录日志，不影响客户下单成功结果。
+
+**启用配置：**
+```env
+ORDER_WEBHOOK_ENABLED=true
+ORDER_WEBHOOK_URL=https://example.com/webhook
+APP_BASE_URL=https://your-domain.com
+```
+
+**Payload：**
+```json
+{
+  "event": "order.created",
+  "order_no": "WX20260505001",
+  "service_type": "清洗",
+  "appliance_type": "油烟机",
+  "address_summary": "阳光小区 3号楼2单元...",
+  "is_urgent": false,
+  "admin_detail_url": "https://your-domain.com/admin/orders/12"
+}
+```
+
+**隐私边界：** 第一版不发送客户手机号，不发送完整地址，不发送内部备注或收费信息。
 
 ---
 
@@ -498,3 +564,4 @@
 1. `/api/orders/dashboard/summary`
 2. `/api/orders/today`
 3. `/api/orders/followups`
+4. `/api/orders/notifications/new`

@@ -17,6 +17,7 @@
 | phone | TEXT | NOT NULL | 手机号 |
 | community | TEXT | NOT NULL | 小区名称 |
 | address | TEXT | NOT NULL | 详细地址 |
+| service_type | TEXT | NOT NULL, DEFAULT '维修' | 服务类型：维修 / 清洗 |
 | appliance_type | TEXT | NOT NULL | 家电类型 |
 | brand_model | TEXT | | 品牌型号，可选 |
 | fault_description | TEXT | NOT NULL | 故障描述 |
@@ -49,6 +50,7 @@
 | ix_orders_order_no | order_no | UNIQUE |
 | ix_orders_warranty_token | warranty_token | UNIQUE |
 | ix_orders_phone | phone | 普通 |
+| ix_orders_service_type | service_type | 普通 |
 | ix_orders_status | status | 普通 |
 | ix_orders_followup_status | followup_status | 普通 |
 | ix_orders_scheduled_at | scheduled_at | 普通 |
@@ -189,6 +191,15 @@ token = secrets.token_urlsafe(16)
 | 已回访 | 已完成回访 |
 | 客户有问题 | 回访发现客户仍有问题 |
 | 无需回访 | 不需要回访 |
+
+### 服务类型
+
+| 值 | 说明 |
+|----|------|
+| 维修 | 家电故障维修类订单 |
+| 清洗 | 空调、油烟机、洗衣机等清洗类订单 |
+
+历史订单自动兼容为“维修”。如果旧库字段为空，接口响应也兜底返回“维修”。
 
 ### 家电类型
 

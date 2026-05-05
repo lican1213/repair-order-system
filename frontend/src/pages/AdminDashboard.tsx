@@ -65,7 +65,7 @@ export default function AdminDashboard() {
               </div>
               <div className="font-medium">{order.customer_name}</div>
               <div className="text-sm text-gray-500">
-                {order.appliance_type} · {order.fault_description.slice(0, 20)}
+                {order.service_type} · {order.appliance_type} · {order.fault_description.slice(0, 20)}
               </div>
             </div>
           ))}

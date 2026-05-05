@@ -20,6 +20,7 @@ COLUMNS = [
     ("手机", "phone"),
     ("小区", "community"),
     ("地址", "address"),
+    ("服务类型", "service_type"),
     ("家电类型", "appliance_type"),
     ("品牌型号", "brand_model"),
     ("故障描述", "fault_description"),
@@ -52,6 +53,7 @@ def _format_cell(value):
 def export_orders(
     status_filter: str | None = Query(None, alias="status"),
     followup_status: str | None = None,
+    service_type: str | None = None,
     created_date_start: str | None = None,
     created_date_end: str | None = None,
     scheduled_date_start: str | None = None,
@@ -63,7 +65,7 @@ def export_orders(
     """导出订单 Excel（需 JWT）。"""
     query = db.query(Order)
     query = apply_order_filters(
-        query, status_filter, followup_status,
+        query, status_filter, followup_status, service_type,
         created_date_start, created_date_end,
         scheduled_date_start, scheduled_date_end,
         keyword,
@@ -84,6 +86,8 @@ def export_orders(
         row = []
         for _, attr in COLUMNS:
             value = getattr(order, attr, None)
+            if attr == "service_type" and not value:
+                value = "维修"
             row.append(_format_cell(value))
         ws.append(row)
 

@@ -2,6 +2,8 @@ export type OrderStatus = '新报修' | '已联系' | '已预约' | '已上门' 
 
 export type FollowupStatus = '未回访' | '已回访' | '客户有问题' | '无需回访'
 
+export type ServiceType = '维修' | '清洗'
+
 export interface Order {
   id: number
   order_no: string
@@ -9,6 +11,7 @@ export interface Order {
   phone: string
   community: string
   address: string
+  service_type: ServiceType
   appliance_type: string
   brand_model: string | null
   fault_description: string
@@ -50,6 +53,12 @@ export interface DashboardSummary {
   month_completed_count: number
   month_income: number
   recent_orders: Order[]
+}
+
+export interface NewOrderNotificationResponse {
+  count: number
+  latest_id: number
+  orders: Order[]
 }
 
 export interface OrderUpdateRequest {

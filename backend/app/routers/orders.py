@@ -11,6 +11,8 @@ from app.models import Order, RepairLog, User
 from app.json_utils import normalize_json_array_text
 from app.schemas import (
     DashboardSummaryResponse,
+    NewOrderNotificationResponse,
+    OrderNotificationItem,
     OrderListResponse,
     OrderResponse,
     OrderUpdateRequest,
@@ -120,6 +122,31 @@ def get_followup_orders(
         .all()
     )
     return [OrderResponse.model_validate(o) for o in orders]
+
+
+# --- GET /api/orders/notifications/new ---
+
+@router.get("/notifications/new", response_model=NewOrderNotificationResponse)
+def get_new_order_notifications(
+    after_id: int = Query(0, ge=0),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """后台页面打开期间的新订单提醒。不是跨设备未读系统。"""
+    latest_id = db.query(func.coalesce(func.max(Order.id), 0)).scalar() or 0
+    count = db.query(func.count(Order.id)).filter(Order.id > after_id).scalar() or 0
+    orders = (
+        db.query(Order)
+        .filter(Order.id > after_id)
+        .order_by(Order.id.asc())
+        .limit(20)
+        .all()
+    )
+    return NewOrderNotificationResponse(
+        count=int(count),
+        latest_id=max(int(latest_id), after_id),
+        orders=[OrderNotificationItem.model_validate(o) for o in orders],
+    )
 
 
 # --- GET /api/orders/{id} ---
@@ -234,6 +261,7 @@ def update_order(
 def list_orders(
     status_filter: str | None = Query(None, alias="status"),
     followup_status: str | None = None,
+    service_type: str | None = None,
     created_date_start: str | None = None,
     created_date_end: str | None = None,
     scheduled_date_start: str | None = None,
@@ -247,7 +275,7 @@ def list_orders(
     """订单列表。支持筛选和分页。"""
     query = db.query(Order)
     query = apply_order_filters(
-        query, status_filter, followup_status,
+        query, status_filter, followup_status, service_type,
         created_date_start, created_date_end,
         scheduled_date_start, scheduled_date_end,
         keyword,

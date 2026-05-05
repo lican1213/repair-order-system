@@ -7,6 +7,7 @@ from app.constants import (
     APPLIANCE_TYPES,
     FOLLOWUP_STATUSES,
     ORDER_STATUSES,
+    SERVICE_TYPES,
     USED_APPLIANCE_STATUSES,
 )
 from app.json_utils import normalize_json_array_text, parse_json_array_text
@@ -51,6 +52,7 @@ class RepairSubmitRequest(BaseModel):
     phone: str = Field(..., min_length=11, max_length=11)
     community: str = Field(..., min_length=1, max_length=100)
     address: str = Field(..., min_length=1, max_length=200)
+    service_type: str = Field("维修", description="服务类型")
     appliance_type: str = Field(..., description="家电类型")
     brand_model: Optional[str] = Field(None, max_length=100)
     fault_description: str = Field(..., min_length=1, max_length=2000)
@@ -70,6 +72,13 @@ class RepairSubmitRequest(BaseModel):
             raise ValueError("手机号必须以1开头")
         if len(v) != 11:
             raise ValueError("请输入11位手机号")
+        return v
+
+    @field_validator("service_type")
+    @classmethod
+    def validate_service_type(cls, v: str) -> str:
+        if v not in SERVICE_TYPES:
+            raise ValueError(f"无效的服务类型: {v}")
         return v
 
     @model_validator(mode="after")
@@ -160,6 +169,7 @@ class OrderResponse(BaseModel):
     phone: str
     community: str
     address: str
+    service_type: str = "维修"
     appliance_type: str
     brand_model: Optional[str]
     fault_description: str
@@ -184,6 +194,13 @@ class OrderResponse(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     location_address: Optional[str] = None
+
+    @field_validator("service_type", mode="before")
+    @classmethod
+    def default_service_type(cls, value: Optional[str]) -> str:
+        if value in SERVICE_TYPES:
+            return value
+        return "维修"
 
     @field_validator("image_paths", "repair_images")
     @classmethod
@@ -239,6 +256,31 @@ class DashboardSummaryResponse(BaseModel):
     month_completed_count: int
     month_income: float
     recent_orders: list[OrderResponse]
+
+
+class OrderNotificationItem(BaseModel):
+    id: int
+    order_no: str
+    service_type: str = "维修"
+    appliance_type: str
+    community: str
+    is_urgent: bool
+    created_at: datetime
+
+    @field_validator("service_type", mode="before")
+    @classmethod
+    def default_service_type(cls, value: Optional[str]) -> str:
+        if value in SERVICE_TYPES:
+            return value
+        return "维修"
+
+    model_config = {"from_attributes": True}
+
+
+class NewOrderNotificationResponse(BaseModel):
+    count: int
+    latest_id: int
+    orders: list[OrderNotificationItem]
 
 
 # --- 二手家电展示橱窗 ---

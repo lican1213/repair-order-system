@@ -17,6 +17,11 @@ export const FOLLOWUP_STATUSES: FollowupStatus[] = [
   '无需回访',
 ]
 
+export const SERVICE_TYPES = [
+  '维修',
+  '清洗',
+] as const
+
 export const APPLIANCE_TYPES = [
   '空调',
   '冰箱',

@@ -31,6 +31,12 @@ class Settings(BaseSettings):
     AMAP_WEB_SERVICE_KEY: str | None = None
     AMAP_REGEOCODE_ENABLED: bool = False
 
+    # 新订单 Webhook 通知（默认关闭）
+    ORDER_WEBHOOK_ENABLED: bool = False
+    ORDER_WEBHOOK_URL: str | None = None
+    ORDER_WEBHOOK_TIMEOUT_SECONDS: int = 3
+    APP_BASE_URL: str = ""
+
     model_config = {
         "env_file": str(BASE_DIR / ".env"),
         "env_file_encoding": "utf-8",

@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import or_
 from sqlalchemy.orm import Query
 
-from app.constants import FOLLOWUP_STATUSES, ORDER_STATUSES
+from app.constants import FOLLOWUP_STATUSES, ORDER_STATUSES, SERVICE_TYPES
 from app.models import Order
 
 
@@ -14,6 +14,7 @@ def apply_order_filters(
     query: Query,
     status_filter: str | None = None,
     followup_status: str | None = None,
+    service_type: str | None = None,
     created_date_start: str | None = None,
     created_date_end: str | None = None,
     scheduled_date_start: str | None = None,
@@ -36,8 +37,16 @@ def apply_order_filters(
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=f"无效的回访状态: {followup_status}",
-            )
+        )
         query = query.filter(Order.followup_status == followup_status)
+
+    if service_type:
+        if service_type not in SERVICE_TYPES:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"无效的服务类型: {service_type}",
+            )
+        query = query.filter(Order.service_type == service_type)
 
     if created_date_start or created_date_end:
         try:

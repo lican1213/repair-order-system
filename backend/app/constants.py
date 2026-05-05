@@ -15,6 +15,11 @@ FOLLOWUP_STATUSES = [
     "无需回访",
 ]
 
+SERVICE_TYPES = [
+    "维修",
+    "清洗",
+]
+
 APPLIANCE_TYPES = [
     "空调",
     "冰箱",

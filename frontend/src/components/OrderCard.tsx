@@ -18,6 +18,7 @@ export default function OrderCard({ order, onClick }: OrderCardProps) {
       </div>
       <div className="font-medium text-base mb-1">{order.customer_name}</div>
       <div className="text-sm text-gray-600 mb-1">
+        {order.service_type} · {' '}
         {order.appliance_type}
         {order.brand_model ? ` · ${order.brand_model}` : ''}
       </div>

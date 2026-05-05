@@ -1,4 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom'
+import NewOrderAlert from '../components/NewOrderAlert'
 
 export default function ProtectedRoute() {
   const token = localStorage.getItem('token')
@@ -7,5 +8,10 @@ export default function ProtectedRoute() {
     return <Navigate to="/admin" replace />
   }
 
-  return <Outlet />
+  return (
+    <>
+      <NewOrderAlert />
+      <Outlet />
+    </>
+  )
 }
