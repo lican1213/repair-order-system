@@ -515,24 +515,40 @@ Webhook 不是公开 API；由后端在客户提交订单成功后异步向 `ORD
 **启用配置：**
 ```env
 ORDER_WEBHOOK_ENABLED=true
+ORDER_WEBHOOK_PROVIDER=generic
+ORDER_WECOM_INCLUDE_PRIVATE_FIELDS=false
 ORDER_WEBHOOK_URL=https://example.com/webhook
 APP_BASE_URL=https://your-domain.com
 ```
 
-**Payload：**
+`ORDER_WEBHOOK_PROVIDER=generic` 保持原 JSON payload；`ORDER_WEBHOOK_PROVIDER=wecom` 发送企业微信机器人 markdown payload。
+
+**generic Payload：**
 ```json
 {
   "event": "order.created",
   "order_no": "WX20260505001",
   "service_type": "清洗",
   "appliance_type": "油烟机",
-  "address_summary": "阳光小区 3号楼2单元...",
+  "address_summary": "阳光小区",
   "is_urgent": false,
   "admin_detail_url": "https://your-domain.com/admin/orders/12"
 }
 ```
 
-**隐私边界：** 第一版不发送客户手机号，不发送完整地址，不发送内部备注或收费信息。
+**wecom Payload：**
+```json
+{
+  "msgtype": "markdown",
+  "markdown": {
+    "content": "【新订单提醒】\n> 工单号：WX20260505001\n> 服务类型：清洗\n> 家电类型：油烟机\n> 区域：阳光小区\n> 紧急程度：普通\n> 后台查看：https://your-domain.com/admin/orders/12"
+  }
+}
+```
+
+**隐私边界：** 不发送客户手机号、客户姓名、完整地址、完整故障描述、保修 token、维修结果、最终收费、配件、图片、内部备注。企业微信机器人 URL 等同密钥，只能放在后端 `.env`，不能提交到 GitHub 或写入前端。
+
+如企业微信群是内部接单群且确实需要完整联系信息，可设置 `ORDER_WECOM_INCLUDE_PRIVATE_FIELDS=true`。该开关只影响 `wecom` provider，会在企业微信 markdown 中额外加入客户姓名、手机号、完整地址和故障/清洗描述；`generic` provider 仍只发送脱敏摘要。
 
 ---
 

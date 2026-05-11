@@ -672,3 +672,89 @@
 - 二手家电可能上传多张图片，客户需要查看全部图片
 - 原实现"查看图片"按钮只显示第一张，功能与点击大图重复
 - 不引入第三方图片预览库，保持轻量
+
+## v1.4 服务类型与新单提醒决策
+
+### D-071: service_type 作为独立业务字段
+
+**决策：** `service_type` 独立为 `orders` 表字段（`String(20), default="维修", nullable=False, index=True`），不复用 `appliance_type` 或通过其他方式标记。
+
+**理由：**
+- 维修和清洗是两种根本不同的服务类型，影响表单文案和后端处理
+- 独立字段支持按服务类型筛选、统计和导出
+- 历史订单通过 `ensure_order_compat_columns()` 自动补列并兜底为"维修"
+
+### D-072: 后端强校验 service_type 枚举
+
+**决策：** Pydantic `RepairSubmitRequest` 的 `service_type` 字段使用 `field_validator` 校验是否在 `SERVICE_TYPES` 列表中，非法值返回 422。前端同时限制选择，但不替代后端校验。
+
+**理由：**
+- 前端校验可被绕过，后端强校验是安全底线
+- 枚举集中管理在 `constants.py` / `constants.ts`，与 D-008 一致
+
+### D-073: 新订单提醒使用轻量轮询，不做 WebSocket/SSE
+
+**决策：** 后台新单提醒使用 `setInterval` 每 25 秒轮询 `/api/orders/notifications/new`，不引入 WebSocket 或 SSE。
+
+**理由：**
+- 小店场景只有老板一人后台，并发极低
+- 25 秒延迟可接受（不是实时派单系统）
+- 轮询实现简单，无额外依赖，无连接管理复杂度
+- 如果后续需要实时推送，可平滑升级为 SSE
+
+### D-074: 新订单提醒基于 after_id 基线
+
+**决策：** 前端首次轮询时记录 `latest_id` 作为基线（不触发提醒），后续轮询只提醒 `id > after_id` 的新订单。
+
+**理由：**
+- 避免打开后台页面时把所有历史订单都作为新单提醒
+- 基线通过 `latest_id` 传递，无需服务端存储未读状态
+- 跨标签页不共享基线（每个标签页独立计数），符合"不是跨设备未读系统"的定位
+
+### D-075: 音频播放失败静默处理
+
+**决策：** `playNotificationSound()` 使用 AudioContext 生成简短提示音，整体 try-catch 包裹，失败不抛异常、不打印控制台错误。
+
+**理由：**
+- 浏览器自动播放策略可能阻止无用户交互的音频
+- 提示音是锦上添花，视觉提醒（红色条+标题闪烁）是核心
+- 失败时不应干扰后台正常使用
+
+### D-076: Webhook 默认关闭且使用 BackgroundTasks 异步
+
+**决策：** Webhook 通过 `ORDER_WEBHOOK_ENABLED` 默认关闭。开启后在订单 commit 成功后通过 FastAPI `BackgroundTasks` 异步发送，失败只写日志。
+
+**理由：**
+- Webhook 是可选增强，不应影响核心下单流程
+- `BackgroundTasks` 是 FastAPI 原生异步机制，无额外依赖
+- 默认关闭避免首次部署时的配置错误
+- URL 为空时不请求，双重保险
+
+### D-077: generic Webhook payload 脱敏设计
+
+**决策：** `ORDER_WEBHOOK_PROVIDER=generic` 时，外发 payload 只包含 `event`、`order_no`、`service_type`、`appliance_type`、`address_summary`、`is_urgent`、`admin_detail_url`。不含 `phone`、`customer_name`、`address`、`fault_description`。
+
+**理由：**
+- Webhook 接收方可能不可控，不应获得完整客户隐私
+- `address_summary` 只保留小区或地址摘要
+- `admin_detail_url` 仅在 `APP_BASE_URL` 非空时生成完整 URL，否则返回相对路径
+
+### D-078: 数据库兼容迁移使用原始 SQLite 连接
+
+**决策：** `ensure_order_compat_columns()` 使用 `sqlite3.connect()` 直接操作，绕过 SQLAlchemy ORM，通过 `PRAGMA table_info` 检查列是否存在后 ALTER TABLE。
+
+**理由：**
+- SQLAlchemy ORM 的 `create_all` 不会为已存在的表添加新列
+- 原始 SQL 可以精确控制 ALTER TABLE 逻辑
+- 迁移在 `init_db()` 中调用，位于 `create_all` 之后，确保表已存在
+- 幂等设计：重复执行不会报错
+
+### D-079: 企业微信完整接单信息使用显式开关
+
+**决策：** `ORDER_WEBHOOK_PROVIDER=wecom` 发送企业微信机器人 markdown 消息。默认只发送脱敏摘要；只有同时设置 `ORDER_WECOM_INCLUDE_PRIVATE_FIELDS=true` 时，才额外发送客户姓名、手机号、完整地址和故障/清洗描述。
+
+**理由：**
+- 企业微信群通常是内部接单场景，可以承载完整接单信息
+- 但企业微信机器人 URL 等同密钥，一旦泄露会造成客户隐私外发
+- 双开关设计让“发送到企业微信”和“发送完整隐私字段”分离，误配置时默认更安全
+- generic provider 始终过滤内部 `_private` 字段，避免非受控 Webhook 获得完整客户信息

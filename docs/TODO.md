@@ -90,6 +90,28 @@
 - [x] 后台图片上传 `/api/upload/used`
 - [x] 坚持电话咨询，不做在线交易、支付、购物车、客户留言、复杂库存或多规格 SKU
 
+## v1.4（服务类型与新单提醒）— ✅ 已完成（2026-05-05）
+
+- [x] `service_type` 独立业务字段（维修/清洗），全链路一致
+- [x] 客户表单顶部服务类型选择，维修显示"故障描述"，清洗显示"清洗需求"
+- [x] 后台列表、详情、首页卡片、Excel导出显示服务类型
+- [x] 列表支持 service_type 筛选
+- [x] 后台打开期间新单轮询提醒（`/api/orders/notifications/new`）
+- [x] 新单提醒：红色提醒条、标题闪烁、音频尝试
+- [x] Webhook 默认关闭，失败只写日志，payload 脱敏
+- [x] 旧库兼容：自动补列 + 兜底"维修"
+- [x] 独立审计 PASS_WITH_FIXES（1 项 High 已在 v1.4.1 修复）
+- [x] 修复 High：通知接口裁剪客户 PII
+
+## v1.4.1（企业微信机器人来单提示）— ✅ 已完成（2026-05-11）
+
+- [x] `ORDER_WEBHOOK_PROVIDER=wecom` 企业微信机器人 markdown 通知
+- [x] `ORDER_WECOM_INCLUDE_PRIVATE_FIELDS=true` 显式开启完整接单信息
+- [x] generic provider 保持脱敏摘要，不泄露 `_private`
+- [x] Webhook URL 为空或请求失败不影响客户下单
+- [x] 前端 `NewOrderNotificationResponse.orders` 改为摘要类型
+- [x] 后端与前端复检通过
+
 ## 安全与部署
 
 - [ ] 生产环境 HTTPS（Caddy 自动证书）

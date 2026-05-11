@@ -58,7 +58,17 @@ export interface DashboardSummary {
 export interface NewOrderNotificationResponse {
   count: number
   latest_id: number
-  orders: Order[]
+  orders: OrderNotificationItem[]
+}
+
+export interface OrderNotificationItem {
+  id: number
+  order_no: string
+  service_type: ServiceType
+  appliance_type: string
+  community: string
+  is_urgent: boolean
+  created_at: string
 }
 
 export interface OrderUpdateRequest {

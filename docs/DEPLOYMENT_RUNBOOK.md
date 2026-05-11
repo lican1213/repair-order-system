@@ -1,6 +1,6 @@
 # 部署运行手册
 
-适用版本：v1.1 交付前部署准备。
+适用版本：v1.4.1。
 
 ## 1. 部署边界
 
@@ -71,7 +71,9 @@ APP_BASE_URL=https://your-domain.com
 # 可选：新订单 Webhook 通知，默认关闭。
 # 开启后只发送脱敏的新单摘要，失败不影响客户下单。
 ORDER_WEBHOOK_ENABLED=false
-ORDER_WEBHOOK_URL=
+ORDER_WEBHOOK_PROVIDER=wecom
+ORDER_WECOM_INCLUDE_PRIVATE_FIELDS=false
+ORDER_WEBHOOK_URL=https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=REPLACE_WITH_YOUR_KEY
 ORDER_WEBHOOK_TIMEOUT_SECONDS=3
 ```
 
@@ -79,6 +81,38 @@ ORDER_WEBHOOK_TIMEOUT_SECONDS=3
 - `.env` 文件不得提交到 Git（已在 `.gitignore` 排除）。
 - 不需要配置高德、百度、腾讯等地图 Key。
 - 如启用 Webhook，`ORDER_WEBHOOK_URL` 应使用 HTTPS，并确认接收端不会把通知内容公开。
+- 企业微信机器人 URL 等同密钥，不得提交到 GitHub，不得写进前端，不得发给无关人员。
+
+### 4.1 企业微信机器人通知
+
+企业微信群里打开群设置，添加“群机器人”，复制机器人 Webhook URL。服务器 `backend/.env` 配置：
+
+```bash
+ORDER_WEBHOOK_ENABLED=true
+ORDER_WEBHOOK_PROVIDER=wecom
+ORDER_WECOM_INCLUDE_PRIVATE_FIELDS=true
+ORDER_WEBHOOK_URL=https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=REPLACE_WITH_YOUR_KEY
+APP_BASE_URL=https://your-domain.example
+```
+
+说明：
+
+- `ORDER_WEBHOOK_PROVIDER=generic` 保持通用 JSON payload。
+- `ORDER_WEBHOOK_PROVIDER=wecom` 发送企业微信 markdown 消息。
+- 默认通知只包含工单号、服务类型、家电类型、区域摘要、紧急程度和可选后台链接。
+- `ORDER_WECOM_INCLUDE_PRIVATE_FIELDS=true` 时，企业微信消息会额外包含客户姓名、手机号、完整地址和故障/清洗描述。
+- 通知不包含保修 token、最终收费、维修结果、配件、图片或内部备注。
+- `APP_BASE_URL` 为空时不会在企业微信消息里拼后台链接。
+- `ORDER_WEBHOOK_URL` 为空、请求超时或企业微信返回异常时，只写后端 warning 日志，不影响客户提交订单。
+
+群里收不到消息时依次检查：
+
+- `ORDER_WEBHOOK_ENABLED` 是否为 `true`。
+- `ORDER_WEBHOOK_PROVIDER` 是否为 `wecom`。
+- `ORDER_WEBHOOK_URL` 是否完整且仍有效，群机器人是否被删除。
+- 服务器是否能访问 `qyapi.weixin.qq.com`。
+- 后端日志里是否有 webhook warning。
+- 是否触发企业微信机器人频率限制。
 
 ## 5. 自动备份 cron
 

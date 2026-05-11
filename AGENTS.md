@@ -31,7 +31,7 @@ repair-order-system/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py, config.py, database.py, models.py
-│   │   ├── schemas.py, auth.py, constants.py, rate_limit.py
+│   │   ├── schemas.py, auth.py, constants.py, rate_limit.py, notification.py
 │   │   ├── routers/ (auth, public, orders, upload, export, warranty, password, used_appliances)
 │   │   └── static/ (React build output)
 │   ├── data/ (SQLite)
@@ -86,6 +86,8 @@ python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 | Mobile Hotfix | ✅ 完成 | 七轮修复全部通过（2026-05-03） |
 | v1.1 | ✅ 完成 | 备份/清理/限频/改密，14/14 端点 PASS，Codex 审计 PASS（2026-05-03） |
 | v1.3：二手家电展示橱窗 | ✅ 完成 | 公开 `/used` + 后台 `/admin/used-appliances`，独立审计 PASS（2026-05-04） |
+| v1.4：服务类型与新单提醒 | ✅ 完成 | 维修/清洗分类、新单轮询、Webhook，独立审计 PASS_WITH_FIXES（2026-05-05） |
+| v1.4.1：企业微信来单提示 | ✅ 完成 | 企业微信机器人通知、完整接单信息显式开关、v1.4 High 修复完成（2026-05-11） |
 
 ## v1.1 交付状态
 
@@ -95,12 +97,20 @@ v1.1 已于 2026-05-03 开发完成并通过 Codex 审计（**PASS**）。详见
 
 v1.3 已于 2026-05-04 开发完成并通过独立审计（**PASS**）。详见 `docs/USED_APPLIANCES_AUDIT_REPORT.md`。
 
+## v1.4 交付状态
+
+v1.4 已于 2026-05-05 开发完成并通过独立审计（**PASS_WITH_FIXES**）。审计 High 问题已在 v1.4.1 修复：后台新单轮询接口只返回摘要字段。
+
+## v1.4.1 交付状态
+
+v1.4.1 已于 2026-05-11 完成：企业微信机器人来单提示、`ORDER_WECOM_INCLUDE_PRIVATE_FIELDS` 完整接单信息显式开关、前端通知响应类型修正，复检通过。
+
 ## 下一步
 
-项目已完成 v1.0 + v1.1 + v1.3 开发，v1.3 已通过独立审计：
+项目已完成 v1.0 + v1.1 + v1.3 + v1.4 + v1.4.1 开发：
 
-1. 打 v1.3 tag
-2. 线上灰度观察（见 `docs/REAL_DEVICE_TEST_PLAN.md`）
+1. 打 v1.4.1 tag 并灰度上线
+2. 线上观察企业微信通知和后台轮询提醒
 3. 部署准备（Caddy + HTTPS + systemd，确认 X-Forwarded-For 信任边界）
 4. v1.2 只在有真实需求后再规划
 5. 二手家电展示橱窗后续不得扩展成商城系统
@@ -124,4 +134,6 @@ v1.3 已于 2026-05-04 开发完成并通过独立审计（**PASS**）。详见 
 - Agent 只用于开发阶段
 - 不做：AI 客服、AI 诊断、AI 报价、在线支付、会员、商城、复杂库存、多员工、微信小程序
 - 状态枚举集中管理在 `constants.py` / `constants.ts`
+- 服务类型枚举集中管理在 `constants.py` / `constants.ts`（`SERVICE_TYPES = ["维修", "清洗"]`）
 - 公开保修接口只返回公开字段，不暴露客户隐私
+- Webhook 默认关闭，失败只写日志；generic 默认脱敏，wecom 仅在 `ORDER_WECOM_INCLUDE_PRIVATE_FIELDS=true` 时发送完整接单信息

@@ -1,6 +1,9 @@
+import json
 import os
 import tempfile
+import urllib.error
 import unittest
+from unittest import mock
 from pathlib import Path
 
 
@@ -29,6 +32,26 @@ class V14OrdersTest(unittest.TestCase):
 
         engine.dispose()
         cls.tmpdir.cleanup()
+
+    def setUp(self):
+        from app.config import settings
+        from app.rate_limit import limiter
+
+        self._settings_snapshot = {
+            "ORDER_WEBHOOK_ENABLED": settings.ORDER_WEBHOOK_ENABLED,
+            "ORDER_WEBHOOK_PROVIDER": settings.ORDER_WEBHOOK_PROVIDER,
+            "ORDER_WEBHOOK_URL": settings.ORDER_WEBHOOK_URL,
+            "ORDER_WEBHOOK_TIMEOUT_SECONDS": settings.ORDER_WEBHOOK_TIMEOUT_SECONDS,
+            "ORDER_WECOM_INCLUDE_PRIVATE_FIELDS": settings.ORDER_WECOM_INCLUDE_PRIVATE_FIELDS,
+            "APP_BASE_URL": settings.APP_BASE_URL,
+        }
+        limiter._records.clear()
+
+    def tearDown(self):
+        from app.config import settings
+
+        for key, value in self._settings_snapshot.items():
+            setattr(settings, key, value)
 
     def login_headers(self):
         response = self.client.post(
@@ -154,6 +177,247 @@ class V14OrdersTest(unittest.TestCase):
         self.assertNotIn("phone", payload)
         self.assertNotIn("customer_name", payload)
         self.assertNotEqual(payload["address_summary"], "阳光小区 3号楼2单元501室门口左侧靠近电梯间请不要完整发送")
+
+    def test_order_webhook_disabled_does_not_send_external_request(self):
+        from app.config import settings
+        from app.notification import send_order_created_webhook
+
+        settings.ORDER_WEBHOOK_ENABLED = False
+        settings.ORDER_WEBHOOK_PROVIDER = "wecom"
+        settings.ORDER_WEBHOOK_URL = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=REPLACE_WITH_YOUR_KEY"
+
+        with mock.patch("app.notification.urllib.request.urlopen") as urlopen:
+            send_order_created_webhook({"event": "order.created", "order_no": "WX20260511001"})
+
+        urlopen.assert_not_called()
+
+    def test_wecom_webhook_builds_markdown_payload_without_private_fields(self):
+        from app.config import settings
+        from app.models import Order
+        from app.notification import build_order_created_payload, send_order_created_webhook
+
+        settings.ORDER_WEBHOOK_ENABLED = True
+        settings.ORDER_WEBHOOK_PROVIDER = "wecom"
+        settings.ORDER_WEBHOOK_URL = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=REPLACE_WITH_YOUR_KEY"
+        settings.APP_BASE_URL = "https://example.com"
+
+        order = Order(
+            id=101,
+            order_no="WX20260511101",
+            customer_name="赵女士",
+            phone="13100000101",
+            community="幸福花园",
+            address="8号楼1单元2302室请不要完整发送",
+            service_type="清洗",
+            appliance_type="油烟机",
+            fault_description="客户说油污很重，需要下午联系",
+            is_urgent=False,
+        )
+        payload = build_order_created_payload(order)
+
+        with mock.patch("app.notification.urllib.request.urlopen") as urlopen:
+            response = mock.Mock()
+            response.status = 200
+            urlopen.return_value.__enter__.return_value = response
+
+            send_order_created_webhook(payload)
+
+        request = urlopen.call_args[0][0]
+        body = json.loads(request.data.decode("utf-8"))
+        content = body["markdown"]["content"]
+
+        self.assertEqual(body["msgtype"], "markdown")
+        self.assertIn("【新订单提醒】", content)
+        self.assertIn("> 工单号：WX20260511101", content)
+        self.assertIn("> 服务类型：清洗", content)
+        self.assertIn("> 家电类型：油烟机", content)
+        self.assertIn("> 区域：", content)
+        self.assertIn("> 紧急程度：普通", content)
+        self.assertIn("> 后台查看：https://example.com/admin/orders/101", content)
+        self.assertNotIn("13100000101", content)
+        self.assertNotIn("赵女士", content)
+        self.assertNotIn("8号楼1单元2302室请不要完整发送", content)
+        self.assertNotIn("客户说油污很重，需要下午联系", content)
+
+    def test_wecom_webhook_includes_private_fields_when_explicitly_enabled(self):
+        from app.config import settings
+        from app.models import Order
+        from app.notification import build_order_created_payload, send_order_created_webhook
+
+        settings.ORDER_WEBHOOK_ENABLED = True
+        settings.ORDER_WEBHOOK_PROVIDER = "wecom"
+        settings.ORDER_WECOM_INCLUDE_PRIVATE_FIELDS = True
+        settings.ORDER_WEBHOOK_URL = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=REPLACE_WITH_YOUR_KEY"
+        settings.APP_BASE_URL = "https://example.com"
+
+        order = Order(
+            id=107,
+            order_no="WX20260511107",
+            customer_name="赵女士",
+            phone="13100000107",
+            community="幸福花园",
+            address="8号楼1单元2302室",
+            service_type="清洗",
+            appliance_type="油烟机",
+            fault_description="客户说油污很重，需要下午联系",
+            is_urgent=False,
+        )
+        payload = build_order_created_payload(order)
+
+        with mock.patch("app.notification.urllib.request.urlopen") as urlopen:
+            response = mock.Mock()
+            response.status = 200
+            urlopen.return_value.__enter__.return_value = response
+
+            send_order_created_webhook(payload)
+
+        request = urlopen.call_args[0][0]
+        body = json.loads(request.data.decode("utf-8"))
+        content = body["markdown"]["content"]
+
+        self.assertIn("> 客户：赵女士", content)
+        self.assertIn("> 电话：13100000107", content)
+        self.assertIn("> 地址：幸福花园 8号楼1单元2302室", content)
+        self.assertIn("> 描述：客户说油污很重，需要下午联系", content)
+
+    def test_wecom_payload_omits_admin_link_when_app_base_url_empty(self):
+        from app.config import settings
+        from app.models import Order
+        from app.notification import build_order_created_payload, send_order_created_webhook
+
+        settings.ORDER_WEBHOOK_ENABLED = True
+        settings.ORDER_WEBHOOK_PROVIDER = "wecom"
+        settings.ORDER_WEBHOOK_URL = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=REPLACE_WITH_YOUR_KEY"
+        settings.APP_BASE_URL = ""
+
+        order = Order(
+            id=102,
+            order_no="WX20260511102",
+            customer_name="孙先生",
+            phone="13100000102",
+            community="幸福花园",
+            address="9号楼",
+            service_type="维修",
+            appliance_type="冰箱",
+            fault_description="不制冷",
+            is_urgent=True,
+        )
+        payload = build_order_created_payload(order)
+
+        with mock.patch("app.notification.urllib.request.urlopen") as urlopen:
+            response = mock.Mock()
+            response.status = 200
+            urlopen.return_value.__enter__.return_value = response
+
+            send_order_created_webhook(payload)
+
+        request = urlopen.call_args[0][0]
+        body = json.loads(request.data.decode("utf-8"))
+        content = body["markdown"]["content"]
+
+        self.assertNotIn("后台查看", content)
+        self.assertNotIn("/admin/orders/102", content)
+
+    def test_webhook_url_empty_or_request_failure_does_not_break_submit(self):
+        from app.config import settings
+
+        settings.ORDER_WEBHOOK_ENABLED = True
+        settings.ORDER_WEBHOOK_PROVIDER = "wecom"
+        settings.ORDER_WEBHOOK_URL = ""
+
+        with mock.patch("app.notification.urllib.request.urlopen") as urlopen:
+            empty_url_response = self.submit_order("13100000103", service_type="清洗")
+
+        self.assertEqual(empty_url_response.status_code, 200)
+        urlopen.assert_not_called()
+
+        settings.ORDER_WEBHOOK_URL = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=REPLACE_WITH_YOUR_KEY"
+
+        with mock.patch(
+            "app.notification.urllib.request.urlopen",
+            side_effect=urllib.error.URLError("network down"),
+        ) as urlopen:
+            failure_response = self.submit_order("13100000104", service_type="维修")
+
+        self.assertEqual(failure_response.status_code, 200)
+        urlopen.assert_called_once()
+
+    def test_generic_webhook_provider_keeps_existing_json_payload(self):
+        from app.config import settings
+        from app.models import Order
+        from app.notification import build_order_created_payload, send_order_created_webhook
+
+        order = Order(
+            id=105,
+            order_no="WX20260511105",
+            customer_name="钱先生",
+            phone="13100000105",
+            community="阳光小区",
+            address="3号楼2单元501",
+            service_type="维修",
+            appliance_type="空调",
+            fault_description="漏水",
+            is_urgent=False,
+        )
+        payload = build_order_created_payload(order)
+
+        settings.ORDER_WEBHOOK_ENABLED = True
+        settings.ORDER_WEBHOOK_PROVIDER = "generic"
+        settings.ORDER_WEBHOOK_URL = "https://example.com/webhook"
+
+        with mock.patch("app.notification.urllib.request.urlopen") as urlopen:
+            response = mock.Mock()
+            response.status = 200
+            urlopen.return_value.__enter__.return_value = response
+
+            send_order_created_webhook(payload)
+
+        request = urlopen.call_args[0][0]
+        body = json.loads(request.data.decode("utf-8"))
+
+        self.assertEqual(body["event"], "order.created")
+        self.assertEqual(body["order_no"], "WX20260511105")
+        self.assertEqual(body["service_type"], "维修")
+        self.assertEqual(body["appliance_type"], "空调")
+        self.assertEqual(body["address_summary"], "阳光小区")
+        self.assertNotIn("msgtype", body)
+        self.assertNotIn("_private", body)
+        self.assertNotIn("phone", body)
+        self.assertNotIn("customer_name", body)
+        self.assertNotIn("address", body)
+        self.assertNotIn("fault_description", body)
+
+    def test_invalid_webhook_provider_falls_back_to_generic_payload(self):
+        from app.config import settings
+        from app.notification import send_order_created_webhook
+
+        payload = {
+            "event": "order.created",
+            "order_no": "WX20260511106",
+            "service_type": "维修",
+            "appliance_type": "冰箱",
+            "address_summary": "幸福花园",
+            "is_urgent": True,
+            "admin_detail_url": "/admin/orders/106",
+        }
+
+        settings.ORDER_WEBHOOK_ENABLED = True
+        settings.ORDER_WEBHOOK_PROVIDER = "unknown"
+        settings.ORDER_WEBHOOK_URL = "https://example.com/webhook"
+
+        with mock.patch("app.notification.urllib.request.urlopen") as urlopen:
+            response = mock.Mock()
+            response.status = 200
+            urlopen.return_value.__enter__.return_value = response
+
+            with self.assertLogs("app.notification", level="WARNING") as logs:
+                send_order_created_webhook(payload)
+
+        request = urlopen.call_args[0][0]
+        body = json.loads(request.data.decode("utf-8"))
+
+        self.assertEqual(body, payload)
+        self.assertIn("falling back to generic", "\n".join(logs.output))
 
 
 if __name__ == "__main__":

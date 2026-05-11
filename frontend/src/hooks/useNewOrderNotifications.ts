@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getNewOrderNotifications } from '../api/orders'
-import type { Order } from '../types/order'
+import type { OrderNotificationItem } from '../types/order'
 import { getNewOrderAlertTitle } from '../utils/orderCopy'
 
 const DEFAULT_INTERVAL_MS = 25_000
@@ -42,7 +42,7 @@ function playNotificationSound() {
 
 export function useNewOrderNotifications(intervalMs = DEFAULT_INTERVAL_MS) {
   const [count, setCount] = useState(0)
-  const [orders, setOrders] = useState<Order[]>([])
+  const [orders, setOrders] = useState<OrderNotificationItem[]>([])
   const afterIdRef = useRef<number | null>(null)
   const countRef = useRef(0)
   const baseTitleRef = useRef(typeof document === 'undefined' ? '' : document.title)

@@ -2,9 +2,50 @@
 
 ## 当前状态
 
-**v1.3 二手家电展示橱窗已完成独立审计（PASS），可打 tag 并灰度上线** — 2026-05-04。
+**v1.4.1 企业微信机器人来单提示已完成复检，可打 tag 并灰度上线** — 2026-05-11。
 
-v1.0 全部 12 个 Phase 通过。Codex 独立审计结论：**PASS_WITH_FIXES**，audit fixes 已通过 Codex 复审（**PASS**）。Mobile Hotfix 七轮已完成。v1.1 四项增强全部实现并通过回归测试（14/14 端点 PASS）。2026-05-04 完成部署前稳定性小修：SQLite WAL + busy_timeout、Caddy HTTPS 部署 runbook、cron 自动备份说明。同日新增公开清洗服务价格表 `/pricing`。v1.3 新增二手家电展示橱窗 `/used` 和后台 `/admin/used-appliances`，坚持展示 + 电话咨询，不做商城交易闭环。v1.3 独立审计 **PASS**，审计期间修复 2 个 bug（上传按钮、多图预览）。
+## v1.4.1 企业微信机器人来单提示
+
+| Phase | 状态 | 日期 | 说明 |
+|-------|------|------|------|
+| WeCom provider | 完成 | 2026-05-11 | `ORDER_WEBHOOK_PROVIDER=wecom` 企业微信 markdown payload |
+| 完整接单信息开关 | 完成 | 2026-05-11 | `ORDER_WECOM_INCLUDE_PRIVATE_FIELDS=true` 时发送客户姓名、电话、完整地址、描述 |
+| v1.4 High 修复 | 完成 | 2026-05-11 | 后台新单轮询接口只返回摘要字段，不返回完整 PII |
+| 前端类型修复 | 完成 | 2026-05-11 | `OrderNotificationItem` 替代 `Order[]` |
+| 复检 | PASS | 2026-05-11 | 后端 compileall、unittest，前端 test/lint/build 全部通过 |
+
+## v1.4 服务类型与新单提醒实施
+
+| Phase | 状态 | 日期 | 说明 |
+|-------|------|------|------|
+| 后端 service_type 全链路 | 完成 | 2026-05-05 | constants/models/schemas/query_utils/orders/export，数据库兼容迁移 |
+| 后端通知接口 | 完成 | 2026-05-05 | `/api/orders/notifications/new` 返回 count/latest_id/orders |
+| 后端 Webhook | 完成 | 2026-05-05 | `notification.py`，默认关闭，BackgroundTasks 异步隔离 |
+| 前端表单服务类型 | 完成 | 2026-05-05 | RepairForm 顶部选择器 + getFaultDescriptionCopy |
+| 前端列表/详情/首页 | 完成 | 2026-05-05 | OrderList/OrderDetail/AdminDashboard/OrderCard 显示+筛选 |
+| 前端新单提醒 | 完成 | 2026-05-05 | useNewOrderNotifications hook + NewOrderAlert 组件 |
+| 文档更新 | 完成 | 2026-05-05 | API_SPEC/DB_SCHEMA/RELEASE_NOTES/README 等 |
+| 独立审计 | PASS_WITH_FIXES | 2026-05-05 | 1 项 High 已在 v1.4.1 修复 |
+
+## v1.4 验证
+
+| 测试项 | 结果 | 日期 |
+|--------|------|------|
+| `python -m compileall app` | PASS | 2026-05-05 |
+| `python -m unittest tests.test_v1_4_orders -v` | 11/11 PASS | 2026-05-11 |
+| `python -m unittest tests.test_used_appliances_api -v` | 1/1 PASS | 2026-05-05 |
+| `npm test` | 6/6 PASS | 2026-05-05 |
+| `npm run lint` | PASS | 2026-05-05 |
+| `npm run build` | PASS | 2026-05-05 |
+| D-1: 未登录 notifications/new → 401 | PASS | 2026-05-05 |
+| D-2: 提交清洗订单，列表/详情显示"清洗" | PASS | 2026-05-05 |
+| D-3: 非法 service_type=安装 → 422 | PASS | 2026-05-05 |
+| D-4: 旧库 migration + 兜底"维修" + 幂等 | PASS | 2026-05-05 |
+| D-5: Webhook disabled 不请求外部 | PASS | 2026-05-11 |
+| D-6: Webhook 失败不影响提交 | PASS | 2026-05-11 |
+| D-7: WeCom 完整接单信息显式开关 | PASS | 2026-05-11 |
+
+v1.0 全部 12 个 Phase 通过。Codex 独立审计结论：**PASS_WITH_FIXES**，audit fixes 已通过 Codex 复审（**PASS**）。Mobile Hotfix 七轮已完成。v1.1 四项增强全部实现并通过回归测试（14/14 端点 PASS）。2026-05-04 完成部署前稳定性小修：SQLite WAL + busy_timeout、Caddy HTTPS 部署 runbook、cron 自动备份说明。同日新增公开清洗服务价格表 `/pricing`。v1.3 新增二手家电展示橱窗 `/used` 和后台 `/admin/used-appliances`，坚持展示 + 电话咨询，不做商城交易闭环。v1.3 独立审计 **PASS**，审计期间修复 2 个 bug（上传按钮、多图预览）。v1.4 新增维修/清洗服务类型、后台新单轮询提醒、默认关闭的 Webhook 通知，独立审计 **PASS_WITH_FIXES**。v1.4.1 修复审计 High，新增企业微信机器人通知和完整接单信息显式开关。
 
 ## v1.3 二手家电展示橱窗实施
 

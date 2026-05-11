@@ -124,7 +124,7 @@ export default function AdminProfile() {
             </div>
             <div className="flex justify-between py-2">
               <span className="text-gray-500">系统版本</span>
-              <span>v1.1</span>
+              <span>v1.4</span>
             </div>
           </div>
         </div>

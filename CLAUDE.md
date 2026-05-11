@@ -89,6 +89,8 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 | 部署前稳定性小修 | ✅ 完成 | SQLite WAL/busy_timeout、Caddy HTTPS runbook、cron 备份说明（2026-05-04） |
 | 线上灰度内容更新 | ✅ 完成 | 新增公开清洗服务价格表 `/pricing`，并在 `/repair` 增加入口；静态前端内容页，不涉及后端 API 或数据库（2026-05-04） |
 | v1.3：二手家电展示橱窗 | ✅ 完成 | 新增公开 `/used` 与后台 `/admin/used-appliances`；独立审计 PASS（2026-05-04） |
+| v1.4：服务类型与新单提醒 | ✅ 完成 | 维修/清洗分类、新单轮询、Webhook；独立审计 PASS_WITH_FIXES（2026-05-05） |
+| v1.4.1：企业微信来单提示 | ✅ 完成 | 企业微信机器人通知、完整接单信息显式开关、v1.4 High 修复完成（2026-05-11） |
 
 ## 版本交付状态
 
@@ -112,14 +114,22 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 
 二手家电展示橱窗。独立审计 **PASS**。详见 `docs/USED_APPLIANCES_AUDIT_REPORT.md`。
 
-**v1.0 + v1.1 + v1.3 完整能力清单：** 报修/上传/登录/JWT/订单管理/今日预约/待回访/保修查询/Excel导出/备份/清理/限频/修改密码/二手家电展示橱窗。
+### v1.4（2026-05-05）
+
+服务类型与新单提醒。独立审计 **PASS_WITH_FIXES**，审计 High 问题已在 v1.4.1 修复：通知接口只返回摘要字段。
+
+### v1.4.1（2026-05-11）
+
+企业微信机器人来单提示。`generic` provider 保持脱敏摘要，`wecom` provider 可通过 `ORDER_WECOM_INCLUDE_PRIVATE_FIELDS=true` 显式发送客户姓名、电话、完整地址和故障/清洗描述。前端新订单提醒响应类型已修正。
+
+**v1.0 + v1.1 + v1.3 + v1.4 + v1.4.1 完整能力清单：** 报修（维修/清洗分类）/上传/登录/JWT/订单管理/服务类型筛选/今日预约/待回访/保修查询/Excel导出/新单提醒/企业微信机器人通知/Webhook/备份/清理/限频/修改密码/二手家电展示橱窗。
 
 ## 下一步
 
-项目已完成 v1.0 + v1.1 + v1.3 开发，v1.3 已通过独立审计：
+项目已完成 v1.0 + v1.1 + v1.3 + v1.4 + v1.4.1 开发：
 
-1. 打 v1.3 tag
-2. 线上灰度观察（见 `docs/REAL_DEVICE_TEST_PLAN.md`）
+1. 打 v1.4.1 tag 并灰度上线
+2. 线上观察企业微信通知和后台轮询提醒
 3. 继续按 `docs/DEPLOYMENT_RUNBOOK.md` 做备份、HTTPS、systemd 和反向代理确认
 4. v1.2 只在有真实需求后再规划，当前不要进入功能膨胀
 5. 二手家电展示橱窗后续不得扩展成商城系统
@@ -147,6 +157,17 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 - 支持硬删除（仅限下架商品），删除时同时清理图片文件
 - 定时清理脚本 `scripts/cleanup_used_appliances.py` 可清理已下架超过 N 天的商品
 - 不做在线交易、支付、购物车、客户留言、复杂库存、多规格 SKU 或商城系统
+
+## v1.4（服务类型与新单提醒）
+
+- `service_type` 独立业务字段（维修/清洗），不混入 `appliance_type`
+- 客户表单顶部服务类型选择，维修显示"故障描述"，清洗显示"清洗需求"
+- 后台列表、详情、首页卡片、Excel导出显示服务类型，列表支持筛选
+- 后台打开期间轮询新订单提醒（`/api/orders/notifications/new`），每 25 秒
+- 新单提醒包括顶部红色提醒、标题闪烁、音频尝试（失败静默处理）
+- Webhook 默认关闭，失败只写日志，不影响客户下单；generic 默认脱敏，wecom 完整接单信息需要 `ORDER_WECOM_INCLUDE_PRIVATE_FIELDS=true`
+- 历史订单数据库兼容：旧库自动补 `service_type` 列，空值兜底"维修"
+- 不做派单、抢单、师傅定位、排班、短信、微信小程序或复杂消息中心
 
 ## 关键规则
 

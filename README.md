@@ -1,8 +1,8 @@
-# 家电维修工单系统 v1.4
+# 家电维修工单系统 v1.4.1
 
 客户扫码提交维修/清洗需求，老板手机后台管理订单，保修凭证查询，并提供极简二手家电展示橱窗。
 
-当前状态：v1.4 服务类型与新单提醒已实现（2026-05-05）。客户表单支持“维修 / 清洗”服务类型，后台打开期间会提示新订单，并支持默认关闭的通用 Webhook 新单通知。二手家电仅展示和电话咨询，不做在线交易、支付、购物车、客户留言或商城系统。
+当前状态：v1.4.1 企业微信机器人来单提示已实现（2026-05-11）。客户表单支持“维修 / 清洗”服务类型，后台打开期间会提示新订单，并支持默认关闭的通用 Webhook / 企业微信机器人新单通知。二手家电仅展示和电话咨询，不做在线交易、支付、购物车、客户留言或商城系统。
 
 ## 技术栈
 
@@ -122,11 +122,31 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 - `SHOP_NAME` — 你的店铺名称
 - `SHOP_PHONE` — 你的联系电话
 - `APP_BASE_URL` — 可选，用于 Webhook 中生成后台详情链接
-- `ORDER_WEBHOOK_ENABLED` / `ORDER_WEBHOOK_URL` — 可选，新订单外部 Webhook，默认关闭
+- `ORDER_WEBHOOK_ENABLED` / `ORDER_WEBHOOK_PROVIDER` / `ORDER_WEBHOOK_URL` — 可选，新订单外部 Webhook，默认关闭
 
 地址由客户手动填写小区和详细地址，师傅上门前电话确认。正式部署版不需要配置地图 Key 或逆地理编码服务。
 
-Webhook 只发送脱敏的新单摘要：工单号、服务类型、家电类型、小区/地址简写、是否紧急、后台详情链接。失败只记录日志，不影响客户下单。
+Webhook 只发送脱敏的新单摘要：工单号、服务类型、家电类型、小区/区域摘要、是否紧急、后台详情链接。失败只记录日志，不影响客户下单。
+
+### 企业微信机器人来单提示
+
+在企业微信群里打开群设置，添加“群机器人”，复制机器人 Webhook URL。这个 URL 等同密钥，不要提交到 GitHub，也不要发给无关人员。
+
+服务器 `backend/.env` 示例：
+
+```bash
+ORDER_WEBHOOK_ENABLED=true
+ORDER_WEBHOOK_PROVIDER=wecom
+ORDER_WECOM_INCLUDE_PRIVATE_FIELDS=true
+ORDER_WEBHOOK_URL=https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=REPLACE_WITH_YOUR_KEY
+APP_BASE_URL=https://your-domain.example
+```
+
+`ORDER_WEBHOOK_PROVIDER=generic` 会保持原来的 JSON payload 发送方式；`wecom` 会发送企业微信 markdown 消息。默认情况下企业微信消息只发脱敏摘要；如果内部接单群确实需要客户联系信息，设置 `ORDER_WECOM_INCLUDE_PRIVATE_FIELDS=true` 后会额外发送客户姓名、手机号、完整地址和故障/清洗描述。
+
+即使开启完整联系信息，企业微信消息仍不发送保修 token、维修结果、收费、配件、图片或内部备注。
+
+如果群里收不到消息，检查 URL 是否正确、群机器人是否被删除、服务器是否能访问 `qyapi.weixin.qq.com`、`ORDER_WEBHOOK_PROVIDER` 是否为 `wecom`、`ORDER_WEBHOOK_ENABLED` 是否为 `true`、后端日志 warning，以及是否触发了企业微信机器人频率限制。
 
 ## 测试账号
 
@@ -152,6 +172,7 @@ Webhook 只发送脱敏的新单摘要：工单号、服务类型、家电类型
 - 订单列表（服务类型筛选、状态筛选、回访筛选、搜索、日期筛选）
 - 订单详情（编辑维修记录、设置保修、一键拨打、复制地址）
 - 后台页面打开期间的新订单提醒（红色提醒、声音尝试、标题闪烁）
+- 可选企业微信机器人来单提示（默认关闭，失败不影响下单）
 - 今日预约（基于实际上门时间）
 - 待回访（标记已回访/有问题/无需回访）
 - Excel 导出（入口位于后台订单列表页 /admin/orders，支持按当前筛选条件导出）
@@ -284,3 +305,10 @@ WantedBy=multi-user.target
 - ✅ 后台打开期间轮询新订单并提示
 - ✅ 默认关闭的通用 Webhook 新单通知
 - ✅ 不做派单、抢单、师傅定位、排班、短信、微信小程序或复杂消息中心
+
+**v1.4.1（企业微信机器人来单提示）— ✅ 已完成（2026-05-11）：**
+- ✅ `ORDER_WEBHOOK_PROVIDER=wecom` 企业微信机器人 markdown 通知
+- ✅ 保留 `generic` 通用 JSON Webhook 行为
+- ✅ 通知失败、URL 为空或网络异常不影响客户下单
+- ✅ 通知内容只发送脱敏订单摘要
+- ✅ 后台“我的”页面版本显示更新为 v1.4

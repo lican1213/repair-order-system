@@ -192,6 +192,34 @@ Codex 独立审计结论 **PASS_WITH_FIXES**，8 项修复已完成并通过复�
 
 ---
 
+## v1.4.1 (2026-05-11)
+
+企业微信机器人来单提示。定位为“在现有默认关闭 Webhook 能力上增加轻量 provider”，不扩展为短信、微信服务号、小程序、派单系统或复杂消息中心。
+
+### 新增功能
+
+- 新增 `ORDER_WEBHOOK_PROVIDER`，支持 `generic` 和 `wecom`。
+- `generic` 保持原有 JSON payload 行为。
+- `wecom` 发送企业微信机器人 markdown 消息。
+- 企业微信消息只包含工单号、服务类型、家电类型、区域摘要、紧急程度和可选后台链接。
+- 新增 `ORDER_WECOM_INCLUDE_PRIVATE_FIELDS`，显式开启后企业微信消息额外包含客户姓名、手机号、完整地址和故障/清洗描述。
+- `APP_BASE_URL` 为空时，企业微信消息不拼接后台链接。
+- 后台“我的”页面系统版本显示从 v1.1 更新为 v1.4。
+
+### 隐私与失败隔离
+
+- 企业微信默认不发送客户姓名、手机号、完整地址、完整故障描述；内部接单群可用 `ORDER_WECOM_INCLUDE_PRIVATE_FIELDS=true` 显式开启。
+- 企业微信通知不发送保修 token、最终收费、维修结果、配件、图片或内部备注。
+- `ORDER_WEBHOOK_ENABLED=false` 时完全不发送外部请求。
+- Webhook URL 为空、请求失败或返回异常时只写 warning 日志，不影响客户下单成功。
+- Webhook URL 仍只放在后端 `.env`，不得提交到 GitHub 或写入前端。
+
+### 测试结果
+
+- 新增后端 unittest 覆盖企业微信 markdown payload、隐私字段、空 URL/请求失败隔离和 generic 回归。
+
+---
+
 ## v1.4 (2026-05-05)
 
 服务类型与新订单提醒。定位为“维修/清洗分类 + 老板后台打开期间提醒 + 可选外部 Webhook”，不是派单系统或复杂消息中心。

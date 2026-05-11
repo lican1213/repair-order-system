@@ -33,6 +33,8 @@ class Settings(BaseSettings):
 
     # 新订单 Webhook 通知（默认关闭）
     ORDER_WEBHOOK_ENABLED: bool = False
+    ORDER_WEBHOOK_PROVIDER: str = "generic"
+    ORDER_WECOM_INCLUDE_PRIVATE_FIELDS: bool = False
     ORDER_WEBHOOK_URL: str | None = None
     ORDER_WEBHOOK_TIMEOUT_SECONDS: int = 3
     APP_BASE_URL: str = ""
