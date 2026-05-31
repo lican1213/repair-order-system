@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import type { ReactNode } from 'react'
 import ProtectedRoute from './routes/ProtectedRoute'
+import SiteFooter from './components/SiteFooter'
 
 import RepairForm from './pages/RepairForm'
 import RepairSuccess from './pages/RepairSuccess'
@@ -28,6 +30,15 @@ function NotFound() {
   )
 }
 
+function PublicPage({ children }: { children: ReactNode }) {
+  return (
+    <>
+      {children}
+      <SiteFooter />
+    </>
+  )
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -36,12 +47,12 @@ export default function App() {
         <Route path="/" element={<Navigate to="/repair" replace />} />
 
         {/* 公开页面 */}
-        <Route path="/repair" element={<RepairForm />} />
-        <Route path="/repair/success" element={<RepairSuccess />} />
-        <Route path="/pricing" element={<PricingPage />} />
-        <Route path="/used" element={<UsedAppliancesPage />} />
-        <Route path="/used/:id" element={<UsedApplianceDetail />} />
-        <Route path="/warranty/t/:token" element={<WarrantyPage />} />
+        <Route path="/repair" element={<PublicPage><RepairForm /></PublicPage>} />
+        <Route path="/repair/success" element={<PublicPage><RepairSuccess /></PublicPage>} />
+        <Route path="/pricing" element={<PublicPage><PricingPage /></PublicPage>} />
+        <Route path="/used" element={<PublicPage><UsedAppliancesPage /></PublicPage>} />
+        <Route path="/used/:id" element={<PublicPage><UsedApplianceDetail /></PublicPage>} />
+        <Route path="/warranty/t/:token" element={<PublicPage><WarrantyPage /></PublicPage>} />
 
         {/* 后台登录 */}
         <Route path="/admin" element={<AdminLogin />} />
@@ -58,7 +69,7 @@ export default function App() {
         </Route>
 
         {/* 404 */}
-        <Route path="*" element={<NotFound />} />
+        <Route path="*" element={<PublicPage><NotFound /></PublicPage>} />
       </Routes>
     </BrowserRouter>
   )
