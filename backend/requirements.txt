@@ -9,3 +9,4 @@ bcrypt
 python-multipart
 openpyxl
 python-dotenv
+wecom-aibot-python-sdk

@@ -39,6 +39,12 @@ class Settings(BaseSettings):
     ORDER_WEBHOOK_TIMEOUT_SECONDS: int = 3
     APP_BASE_URL: str = ""
 
+    # 企业微信智能机器人来单通知（默认关闭）
+    WECOM_BOT_ENABLED: bool = False
+    WECOM_BOT_ID: str = ""
+    WECOM_BOT_SECRET: str = ""
+    WECOM_BOT_CHAT_ID: str = ""
+
     model_config = {
         "env_file": str(BASE_DIR / ".env"),
         "env_file_encoding": "utf-8",

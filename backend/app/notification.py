@@ -131,3 +131,14 @@ def send_order_created_webhook(payload: dict[str, object]) -> None:
                 logger.warning("Order webhook provider=%s returned HTTP %s", provider, response.status)
     except (urllib.error.URLError, OSError, ValueError) as exc:
         logger.warning("Order webhook provider=%s failed: %s", provider, exc)
+
+
+async def send_order_created_bot_notification(order_no: str) -> None:
+    """通过企微智能机器人发送来单通知。失败只记日志。"""
+    from app.bot import send_bot_message
+
+    if not settings.WECOM_BOT_ENABLED:
+        return
+
+    message = f"🔔 新订单来了！工单号：**{order_no}**"
+    await send_bot_message(message)

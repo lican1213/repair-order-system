@@ -13,7 +13,7 @@ from app.config import settings, BASE_DIR
 from app.constants import APPLIANCE_TYPES
 from app.database import get_db
 from app.models import Order
-from app.notification import build_order_created_payload, send_order_created_webhook
+from app.notification import build_order_created_payload, send_order_created_webhook, send_order_created_bot_notification
 from app.rate_limit import limiter
 from app.schemas import (
     PublicUploadResponse,
@@ -263,6 +263,10 @@ def submit_repair(
     background_tasks.add_task(
         send_order_created_webhook,
         build_order_created_payload(order),
+    )
+    background_tasks.add_task(
+        send_order_created_bot_notification,
+        order_no,
     )
 
     return RepairSubmitResponse(

@@ -33,7 +33,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 def on_startup():
-    """启动时：创建目录 + 初始化数据库表 + 创建管理员。"""
+    """启动时：创建目录 + 初始化数据库表 + 创建管理员 + 启动机器人。"""
     dirs = [
         BASE_DIR / "data",
         UPLOADS_DIR / "orders" / "temp",
@@ -46,6 +46,7 @@ def on_startup():
 
     init_db()
     _ensure_admin()
+    _start_bot()
 
 
 def _ensure_admin():
@@ -69,6 +70,27 @@ def _ensure_admin():
             db.commit()
     finally:
         db.close()
+
+
+def _start_bot():
+    """启动企业微信机器人（异步后台任务）。"""
+    import asyncio
+    from app.bot import startup_bot
+
+    try:
+        loop = asyncio.get_running_loop()
+        loop.create_task(startup_bot())
+    except RuntimeError:
+        import asyncio
+        asyncio.run(startup_bot())
+
+
+@app.on_event("shutdown")
+def on_shutdown():
+    """关闭时断开机器人连接。"""
+    from app.bot import shutdown_bot
+
+    shutdown_bot()
 
 
 # --- API 路由 ---
