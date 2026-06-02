@@ -4,7 +4,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
-from app.auth import get_current_user
+from app.auth import require_admin, require_staff_or_admin
 from app.config import settings, BASE_DIR
 from app.database import get_db
 from app.models import User
@@ -80,7 +80,7 @@ async def _save_images(files: list[UploadFile], target_dir: Path, url_prefix: st
 async def upload_used_appliance_images(
     files: list[UploadFile],
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_admin),
 ):
     """后台上传二手家电图片（需 JWT）。"""
     return await _save_images(files, UPLOADS_DIR / "used", "/uploads/used")
@@ -90,7 +90,7 @@ async def upload_used_appliance_images(
 async def upload_repair_images(
     files: list[UploadFile],
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff_or_admin),
 ):
     """后台上传维修照片（需 JWT）。"""
     return await _save_images(files, UPLOADS_DIR / "orders", "/uploads/orders")

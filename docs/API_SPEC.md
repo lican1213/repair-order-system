@@ -193,7 +193,7 @@
 ```json
 {
   "username": "admin",
-  "password": "ChangeThisStrongPassword123!"
+  "password": "<ADMIN_PASSWORD>"
 }
 ```
 

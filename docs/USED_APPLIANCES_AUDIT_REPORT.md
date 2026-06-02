@@ -314,8 +314,8 @@ Get-Content .gitignore
 |--------|------|
 | jdianwxiu.cn 硬编码 | ✅ PASS（0 命中） |
 | 127.0.0.1 硬编码（代码中） | ⚠️ 仅 CORS 配置 `allow_origins=["http://localhost:5173"]`（开发用途，生产环境同源不受影响，预存） |
-| SECRET_KEY 暴露到源码 | ⚠️ config.py 默认值 "please-change-this-to-a-long-random-secret"（预存，README 和部署文档明确要求修改） |
-| ADMIN_PASSWORD 暴露到源码 | ⚠️ config.py 默认值 "ChangeThisStrongPassword123!"（预存，README 和部署文档明确要求修改） |
+| SECRET_KEY 暴露到源码 | ⚠️ config.py 默认值 "<SECRET_KEY_PLACEHOLDER>"（预存，README 和部署文档明确要求修改） |
+| ADMIN_PASSWORD 暴露到源码 | ⚠️ config.py 默认值 "<ADMIN_PASSWORD_PLACEHOLDER>"（预存，README 和部署文档明确要求修改） |
 | .env 文件跟踪 | ✅ .env 在 .gitignore 中（行 14: `backend/.env`） |
 | repair.db 文件跟踪 | ✅ data/*.db 在 .gitignore 中（行 17-19） |
 | uploads 文件跟踪 | ✅ backend/uploads/ 在 .gitignore 中（行 22） |

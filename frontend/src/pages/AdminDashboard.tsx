@@ -3,11 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import BottomNav from '../components/BottomNav'
 import StatusBadge from '../components/StatusBadge'
 import { getDashboardSummary } from '../api/orders'
+import { useAuth } from '../hooks/useAuth'
+import { canManageUsedAppliances } from '../utils/permissions'
 import type { DashboardSummary } from '../types/order'
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [data, setData] = useState<DashboardSummary | null>(null)
+  const canManageUsed = canManageUsedAppliances(user?.role)
 
   useEffect(() => {
     getDashboardSummary().then(setData).catch(() => {})
@@ -26,17 +30,19 @@ export default function AdminDashboard() {
       <div className="p-4">
         <h1 className="text-lg font-bold mb-4">维修工单管理</h1>
 
-        <button
-          type="button"
-          onClick={() => navigate('/admin/used-appliances')}
-          className="mb-4 flex min-h-[44px] w-full items-center justify-between rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-left text-emerald-700 active:bg-emerald-100"
-        >
-          <span>
-            <span className="block text-sm font-semibold">二手家电管理</span>
-            <span className="mt-0.5 block text-xs text-emerald-600">发布、编辑、下架二手家电展示信息</span>
-          </span>
-          <span className="shrink-0 text-lg leading-none" aria-hidden="true">›</span>
-        </button>
+        {canManageUsed && (
+          <button
+            type="button"
+            onClick={() => navigate('/admin/used-appliances')}
+            className="mb-4 flex min-h-[44px] w-full items-center justify-between rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-left text-emerald-700 active:bg-emerald-100"
+          >
+            <span>
+              <span className="block text-sm font-semibold">二手家电管理</span>
+              <span className="mt-0.5 block text-xs text-emerald-600">发布、编辑、下架二手家电展示信息</span>
+            </span>
+            <span className="shrink-0 text-lg leading-none" aria-hidden="true">›</span>
+          </button>
+        )}
 
         <div className="grid grid-cols-2 gap-3 mb-6">
           {cards.map((card) => (

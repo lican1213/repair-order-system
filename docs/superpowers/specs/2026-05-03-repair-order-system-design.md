@@ -493,12 +493,12 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 ### .env 配置
 
 ```
-SECRET_KEY=please-change-this-to-a-long-random-secret
+SECRET_KEY=<GENERATED_SECRET_KEY>
 ACCESS_TOKEN_EXPIRE_DAYS=30
 SHOP_NAME=诚信家电维修
 SHOP_PHONE=13800138000
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=ChangeThisStrongPassword123!
+ADMIN_PASSWORD=<ADMIN_PASSWORD>
 DATABASE_URL=sqlite:///./data/repair.db
 UPLOAD_DIR=./uploads
 MAX_UPLOAD_SIZE_MB=5

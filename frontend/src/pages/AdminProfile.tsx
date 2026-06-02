@@ -5,12 +5,15 @@ import Button from '../components/Button'
 import { getShopInfo } from '../api/public'
 import { changePassword } from '../api/auth'
 import { useAuth } from '../hooks/useAuth'
+import { canManageSystemUsers, canManageUsedAppliances } from '../utils/permissions'
 import type { ShopInfoResponse } from '../types/public'
 
 export default function AdminProfile() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
   const [shopInfo, setShopInfo] = useState<ShopInfoResponse | null>(null)
+  const canManageUsers = canManageSystemUsers(user?.role)
+  const canManageUsed = canManageUsedAppliances(user?.role)
 
   // Password change state
   const [showPasswordForm, setShowPasswordForm] = useState(false)
@@ -122,6 +125,10 @@ export default function AdminProfile() {
               <span className="text-gray-500">当前账号</span>
               <span>{user?.username || '-'}</span>
             </div>
+            <div className="flex justify-between py-2 border-b border-gray-100">
+              <span className="text-gray-500">当前权限</span>
+              <span>{user ? (user.role === 'admin' ? '店主' : user.role === 'staff' ? '师傅' : '只读') : '-'}</span>
+            </div>
             <div className="flex justify-between py-2">
               <span className="text-gray-500">系统版本</span>
               <span>v1.4</span>
@@ -204,14 +211,27 @@ export default function AdminProfile() {
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={() => navigate('/admin/used-appliances')}
-          className="mb-4 flex min-h-[44px] w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 text-left text-sm font-medium text-gray-700 active:bg-gray-50"
-        >
-          <span>二手家电管理</span>
-          <span className="text-gray-400">›</span>
-        </button>
+        {canManageUsers && (
+          <button
+            type="button"
+            onClick={() => navigate('/admin/users')}
+            className="mb-4 flex min-h-[44px] w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 text-left text-sm font-medium text-gray-700 active:bg-gray-50"
+          >
+            <span>账号管理</span>
+            <span className="text-gray-400">›</span>
+          </button>
+        )}
+
+        {canManageUsed && (
+          <button
+            type="button"
+            onClick={() => navigate('/admin/used-appliances')}
+            className="mb-4 flex min-h-[44px] w-full items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 text-left text-sm font-medium text-gray-700 active:bg-gray-50"
+          >
+            <span>二手家电管理</span>
+            <span className="text-gray-400">›</span>
+          </button>
+        )}
 
         <Button variant="danger" fullWidth onClick={handleLogout}>
           退出登录

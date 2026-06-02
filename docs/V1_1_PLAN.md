@@ -387,7 +387,7 @@ python -m uvicorn app.main:app --port 8000
 # 登录获取 token
 TOKEN=$(curl -s -X POST http://localhost:8000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"ChangeThisStrongPassword123!"}' \
+  -d '{"username":"admin","password":"<ADMIN_PASSWORD>"}' \
   | python -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
 
 # 修改密码（旧密码错误）
@@ -401,7 +401,7 @@ curl -s -X POST http://localhost:8000/api/auth/change-password \
 curl -s -X POST http://localhost:8000/api/auth/change-password \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
-  -d '{"old_password":"ChangeThisStrongPassword123!","new_password":"NewPass123!","confirm_password":"NewPass123!"}'
+  -d '{"old_password":"<OLD_ADMIN_PASSWORD>","new_password":"<NEW_ADMIN_PASSWORD>","confirm_password":"<NEW_ADMIN_PASSWORD>"}'
 # 预期: 200 {"message":"密码修改成功，请重新登录"}
 
 # 用新密码登录
@@ -413,7 +413,7 @@ curl -s -X POST http://localhost:8000/api/auth/login \
 # 用旧密码登录
 curl -s -X POST http://localhost:8000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"ChangeThisStrongPassword123!"}'
+  -d '{"username":"admin","password":"<OLD_ADMIN_PASSWORD>"}'
 # 预期: 401
 ```
 

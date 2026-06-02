@@ -167,12 +167,12 @@ cat repair-order-system/CLAUDE.md | head -20
   - Create: `backend/.env.example`
 
   ```
-  SECRET_KEY=please-change-this-to-a-long-random-secret
+  SECRET_KEY=<GENERATED_SECRET_KEY>
   ACCESS_TOKEN_EXPIRE_DAYS=30
   SHOP_NAME=诚信家电维修
   SHOP_PHONE=13800138000
   ADMIN_USERNAME=admin
-  ADMIN_PASSWORD=ChangeThisStrongPassword123!
+  ADMIN_PASSWORD=<ADMIN_PASSWORD>
   DATABASE_URL=sqlite:///./data/repair.db
   UPLOAD_DIR=./uploads
   MAX_UPLOAD_SIZE_MB=5
@@ -401,7 +401,7 @@ python -c "import sqlite3; conn = sqlite3.connect('data/repair.db'); print(conn.
 **测试命令：**
 ```bash
 # 登录
-curl -X POST http://localhost:8000/api/auth/login -H "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"ChangeThisStrongPassword123!\"}"
+curl -X POST http://localhost:8000/api/auth/login -H "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"<ADMIN_PASSWORD>\"}"
 
 # 用返回的 token 访问
 curl http://localhost:8000/api/auth/me -H "Authorization: Bearer <token>"

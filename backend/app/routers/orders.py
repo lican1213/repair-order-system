@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.auth import get_current_user
+from app.auth import get_current_user, require_staff_or_admin
 from app.constants import FOLLOWUP_STATUSES, ORDER_STATUSES
 from app.database import get_db
 from app.models import Order, RepairLog, User
@@ -174,7 +174,7 @@ def update_order(
     order_id: int,
     req: OrderUpdateRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_staff_or_admin),
 ):
     """更新订单。"""
     order = db.query(Order).filter(Order.id == order_id).first()

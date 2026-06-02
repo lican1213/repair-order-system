@@ -7,6 +7,7 @@ from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.constants import USER_ROLES
 from app.database import get_db
 from app.models import User
 
@@ -107,3 +108,22 @@ def get_current_user(
             detail="用户已被禁用",
         )
     return user
+
+
+def _require_roles(current_user: User, allowed_roles: set[str]) -> User:
+    if current_user.role not in USER_ROLES or current_user.role not in allowed_roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="无权限执行该操作",
+        )
+    return current_user
+
+
+def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    """Require the original all-powerful admin-level role."""
+    return _require_roles(current_user, {"admin"})
+
+
+def require_staff_or_admin(current_user: User = Depends(get_current_user)) -> User:
+    """Require an account that can write order work records."""
+    return _require_roles(current_user, {"admin", "staff"})

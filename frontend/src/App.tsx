@@ -17,6 +17,7 @@ import TodayOrders from './pages/TodayOrders'
 import FollowupList from './pages/FollowupList'
 import AdminProfile from './pages/AdminProfile'
 import AdminUsedAppliances from './pages/AdminUsedAppliances'
+import AdminUsers from './pages/AdminUsers'
 
 function NotFound() {
   return (
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="/admin/today" element={<TodayOrders />} />
           <Route path="/admin/followups" element={<FollowupList />} />
           <Route path="/admin/used-appliances" element={<AdminUsedAppliances />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/profile" element={<AdminProfile />} />
         </Route>
 

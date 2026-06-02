@@ -4,16 +4,19 @@ import Button from '../components/Button'
 import ImagePreviewModal from '../components/ImagePreviewModal'
 import StatusBadge from '../components/StatusBadge'
 import { getOrder, updateOrder } from '../api/orders'
+import { useAuth } from '../hooks/useAuth'
 import { ORDER_STATUSES, FOLLOWUP_STATUSES } from '../utils/constants'
 import { copyText } from '../utils/clipboard'
 import { buildWarrantyUrl } from '../utils/url'
 import { getCurrentDateTimeLocalString, getTodayDateString, isPastDateTime, validateWarrantyDate } from '../utils/date'
 import { parseImagePaths } from '../utils/images'
+import { canWriteOrders } from '../utils/permissions'
 import type { Order, OrderUpdateRequest } from '../types/order'
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { user, loading: authLoading } = useAuth()
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(() => Boolean(id))
   const [saving, setSaving] = useState(false)
@@ -24,6 +27,7 @@ export default function OrderDetail() {
   const fieldRefs = useRef<Record<string, HTMLElement | null>>({})
 
   const [form, setForm] = useState<OrderUpdateRequest>({})
+  const canEditOrder = canWriteOrders(user?.role)
 
   // 字段级日期错误（useMemo 派生，见下方）
 
@@ -124,7 +128,7 @@ export default function OrderDetail() {
     window.open(buildWarrantyUrl(order.warranty_token), '_blank')
   }
 
-  if (loading) {
+  if (loading || authLoading) {
     return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><p className="text-gray-500">加载中...</p></div>
   }
 
@@ -215,62 +219,78 @@ export default function OrderDetail() {
           })()}
         </div>
 
-        {/* 维修记录编辑 */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
-          <h3 className="font-bold mb-3">维修记录</h3>
-          <div className="flex flex-col gap-3">
-            <div>
-              <label className="text-sm text-gray-500 mb-1 block">订单状态</label>
-              <select value={form.status || ''} onChange={(e) => update('status', e.target.value)} className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
+        {canEditOrder ? (
+          <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
+            <h3 className="font-bold mb-3">维修记录</h3>
+            <div className="flex flex-col gap-3">
+              <div>
+                <label className="text-sm text-gray-500 mb-1 block">订单状态</label>
+                <select value={form.status || ''} onChange={(e) => update('status', e.target.value)} className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  {ORDER_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-sm text-gray-500 mb-1 block">回访状态</label>
+                <select value={form.followup_status || ''} onChange={(e) => update('followup_status', e.target.value)} className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  {FOLLOWUP_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div ref={(el) => { fieldRefs.current.scheduled_at = el }}>
+                <label className="text-sm text-gray-500 mb-1 block">预约上门时间</label>
+                <input type="datetime-local" value={form.scheduled_at || ''} min={getCurrentDateTimeLocalString()}
+                  onChange={(e) => update('scheduled_at', e.target.value)}
+                  className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                {dateErrors.scheduled_at && <p className="text-red-600 text-sm mt-1">{dateErrors.scheduled_at}</p>}
+              </div>
+              <div>
+                <label className="text-sm text-gray-500 mb-1 block">维修结果</label>
+                <textarea value={form.repair_result || ''} onChange={(e) => update('repair_result', e.target.value)} rows={2} className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm resize-y" />
+              </div>
+              <div>
+                <label className="text-sm text-gray-500 mb-1 block">更换配件</label>
+                <input type="text" value={form.parts_used || ''} onChange={(e) => update('parts_used', e.target.value)} className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-sm text-gray-500 mb-1 block">收费金额（元）</label>
+                <input type="number" min="0" value={form.final_fee ?? ''} onChange={(e) => update('final_fee', e.target.value ? Number(e.target.value) : undefined)} className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div ref={(el) => { fieldRefs.current.warranty_until = el }}>
+                <label className="text-sm text-gray-500 mb-1 block">保修截止日期</label>
+                <input type="date" value={form.warranty_until || ''} min={getTodayDateString()}
+                  onChange={(e) => update('warranty_until', e.target.value)}
+                  className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                {dateErrors.warranty_until && <p className="text-red-600 text-sm mt-1">{dateErrors.warranty_until}</p>}
+              </div>
+              <div>
+                <label className="text-sm text-gray-500 mb-1 block">保修说明</label>
+                <input type="text" value={form.warranty_note || ''} onChange={(e) => update('warranty_note', e.target.value)} className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-sm text-gray-500 mb-1 block">备注</label>
+                <textarea value={form.remark || ''} onChange={(e) => update('remark', e.target.value)} rows={2} className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm resize-y" />
+              </div>
             </div>
-            <div>
-              <label className="text-sm text-gray-500 mb-1 block">回访状态</label>
-              <select value={form.followup_status || ''} onChange={(e) => update('followup_status', e.target.value)} className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                {FOLLOWUP_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-            <div ref={(el) => { fieldRefs.current.scheduled_at = el }}>
-              <label className="text-sm text-gray-500 mb-1 block">预约上门时间</label>
-              <input type="datetime-local" value={form.scheduled_at || ''} min={getCurrentDateTimeLocalString()}
-                onChange={(e) => update('scheduled_at', e.target.value)}
-                className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-              {dateErrors.scheduled_at && <p className="text-red-600 text-sm mt-1">{dateErrors.scheduled_at}</p>}
-            </div>
-            <div>
-              <label className="text-sm text-gray-500 mb-1 block">维修结果</label>
-              <textarea value={form.repair_result || ''} onChange={(e) => update('repair_result', e.target.value)} rows={2} className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm resize-y" />
-            </div>
-            <div>
-              <label className="text-sm text-gray-500 mb-1 block">更换配件</label>
-              <input type="text" value={form.parts_used || ''} onChange={(e) => update('parts_used', e.target.value)} className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-            </div>
-            <div>
-              <label className="text-sm text-gray-500 mb-1 block">收费金额（元）</label>
-              <input type="number" min="0" value={form.final_fee ?? ''} onChange={(e) => update('final_fee', e.target.value ? Number(e.target.value) : undefined)} className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-            </div>
-            <div ref={(el) => { fieldRefs.current.warranty_until = el }}>
-              <label className="text-sm text-gray-500 mb-1 block">保修截止日期</label>
-              <input type="date" value={form.warranty_until || ''} min={getTodayDateString()}
-                onChange={(e) => update('warranty_until', e.target.value)}
-                className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-              {dateErrors.warranty_until && <p className="text-red-600 text-sm mt-1">{dateErrors.warranty_until}</p>}
-            </div>
-            <div>
-              <label className="text-sm text-gray-500 mb-1 block">保修说明</label>
-              <input type="text" value={form.warranty_note || ''} onChange={(e) => update('warranty_note', e.target.value)} className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-            </div>
-            <div>
-              <label className="text-sm text-gray-500 mb-1 block">备注</label>
-              <textarea value={form.remark || ''} onChange={(e) => update('remark', e.target.value)} rows={2} className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm resize-y" />
+
+            <Button fullWidth onClick={handleSave} disabled={saving || Object.keys(dateErrors).length > 0} className="mt-4">
+              {saving ? '保存中...' : '保存'}
+            </Button>
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
+            <h3 className="font-bold mb-3">维修记录</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between"><span className="text-gray-500">订单状态</span><span>{order.status}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">回访状态</span><span>{order.followup_status}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">预约时间</span><span>{order.scheduled_at?.replace('T', ' ').slice(0, 16) || '-'}</span></div>
+              <div className="flex justify-between items-start"><span className="text-gray-500">维修结果</span><span className="max-w-[60%] text-right">{order.repair_result || '-'}</span></div>
+              <div className="flex justify-between items-start"><span className="text-gray-500">更换配件</span><span className="max-w-[60%] text-right">{order.parts_used || '-'}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">收费金额</span><span>{order.final_fee != null ? `¥${order.final_fee}` : '-'}</span></div>
+              <div className="flex justify-between"><span className="text-gray-500">保修截止</span><span>{order.warranty_until || '-'}</span></div>
+              <div className="flex justify-between items-start"><span className="text-gray-500">保修说明</span><span className="max-w-[60%] text-right">{order.warranty_note || '-'}</span></div>
+              <div className="flex justify-between items-start"><span className="text-gray-500">备注</span><span className="max-w-[60%] text-right">{order.remark || '-'}</span></div>
             </div>
           </div>
-
-          <Button fullWidth onClick={handleSave} disabled={saving || Object.keys(dateErrors).length > 0} className="mt-4">
-            {saving ? '保存中...' : '保存'}
-          </Button>
-        </div>
+        )}
 
         {/* 保修凭证 */}
         <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">

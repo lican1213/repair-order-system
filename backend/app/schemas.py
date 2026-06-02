@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from app.constants import (
     APPLIANCE_TYPES,
     FOLLOWUP_STATUSES,
+    MANAGED_USER_ROLES,
     ORDER_STATUSES,
     SERVICE_TYPES,
     USED_APPLIANCE_STATUSES,
@@ -29,8 +30,48 @@ class UserResponse(BaseModel):
     id: int
     username: str
     role: str
+    is_active: bool
+    created_at: datetime
+    last_login_at: Optional[datetime]
 
     model_config = {"from_attributes": True}
+
+
+class UserCreateRequest(BaseModel):
+    username: str = Field(..., min_length=1, max_length=50)
+    password: str = Field(..., min_length=6)
+    role: str = Field(..., description="staff 或 viewer")
+
+    @field_validator("username")
+    @classmethod
+    def normalize_username(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("用户名不能为空")
+        return value
+
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, value: str) -> str:
+        if value not in MANAGED_USER_ROLES:
+            raise ValueError("只能创建 staff 或 viewer 账号")
+        return value
+
+
+class UserUpdateRequest(BaseModel):
+    role: Optional[str] = None
+    is_active: Optional[bool] = None
+
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, value: Optional[str]) -> Optional[str]:
+        if value is not None and value not in MANAGED_USER_ROLES:
+            raise ValueError("只能设置 staff 或 viewer 角色")
+        return value
+
+
+class ResetUserPasswordRequest(BaseModel):
+    password: str = Field(..., min_length=6)
 
 
 class ChangePasswordRequest(BaseModel):

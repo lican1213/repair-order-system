@@ -3,12 +3,16 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import BottomNav from '../components/BottomNav'
 import StatusBadge from '../components/StatusBadge'
 import { getOrders, exportOrders } from '../api/orders'
+import { useAuth } from '../hooks/useAuth'
 import { ORDER_STATUSES, FOLLOWUP_STATUSES, SERVICE_TYPES } from '../utils/constants'
+import { canExportOrders } from '../utils/permissions'
 import type { Order } from '../types/order'
 
 export default function OrderList() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const { user } = useAuth()
+  const canExport = canExportOrders(user?.role)
 
   const [orders, setOrders] = useState<Order[]>([])
   const [total, setTotal] = useState(0)
@@ -243,13 +247,15 @@ export default function OrderList() {
 
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs text-gray-400">共 {total} 条</span>
-          <button
-            onClick={handleExport}
-            disabled={exporting}
-            className="min-h-[44px] px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
-          >
-            {exporting ? '导出中...' : '导出 Excel'}
-          </button>
+          {canExport && (
+            <button
+              onClick={handleExport}
+              disabled={exporting}
+              className="min-h-[44px] px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+            >
+              {exporting ? '导出中...' : '导出 Excel'}
+            </button>
+          )}
         </div>
 
         {/* 列表 */}

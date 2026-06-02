@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from app.auth import get_current_user
+from app.auth import get_current_user, require_admin
 from app.config import settings, BASE_DIR
 from app.constants import USED_APPLIANCE_STATUSES
 from app.database import get_db
@@ -130,7 +130,7 @@ def list_admin_used_appliances(
 def create_used_appliance(
     req: UsedApplianceCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_admin),
 ):
     """后台新增二手家电。"""
     item = UsedAppliance(
@@ -171,7 +171,7 @@ def update_used_appliance(
     item_id: int,
     req: UsedApplianceUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_admin),
 ):
     """后台编辑二手家电。下架通过 status=下架 实现。"""
     item = db.query(UsedAppliance).filter(UsedAppliance.id == item_id).first()
@@ -237,7 +237,7 @@ def _delete_image_files(image_paths_json: str | None) -> int:
 def delete_used_appliance(
     item_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_admin),
 ):
     """删除已下架的二手家电（硬删除 + 清理图片文件）。仅限 status=下架。"""
     item = db.query(UsedAppliance).filter(UsedAppliance.id == item_id).first()

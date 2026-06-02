@@ -37,3 +37,16 @@ USED_APPLIANCE_STATUSES = [
     "已售",
     "下架",
 ]
+
+USER_ROLES = [
+    "admin",
+    "staff",
+    "viewer",
+]
+
+MANAGED_USER_ROLES = [
+    "staff",
+    "viewer",
+]
+
+MAX_USER_ACCOUNTS = 15

@@ -13,7 +13,9 @@ import {
   uploadUsedApplianceImages,
 } from '../api/usedAppliances'
 import { getShopInfo } from '../api/public'
+import { useAuth } from '../hooks/useAuth'
 import { USED_APPLIANCE_CATEGORIES, USED_APPLIANCE_STATUSES } from '../utils/constants'
+import { canManageUsedAppliances } from '../utils/permissions'
 import type {
   UsedAppliance,
   UsedAppliancePayload,
@@ -44,6 +46,7 @@ function getApiMessage(err: unknown): string {
 }
 
 export default function AdminUsedAppliances() {
+  const { user, loading: authLoading } = useAuth()
   const [items, setItems] = useState<UsedAppliance[]>([])
   const [statusFilter, setStatusFilter] = useState('全部')
   const [keyword, setKeyword] = useState('')
@@ -57,6 +60,7 @@ export default function AdminUsedAppliances() {
   const [previewSrc, setPreviewSrc] = useState<string | null>(null)
   const [shopInfo, setShopInfo] = useState<ShopInfoResponse | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const canManage = canManageUsedAppliances(user?.role)
 
   const loadItems = useCallback(async (): Promise<UsedAppliance[]> => {
     const result = await getAdminUsedAppliances({
@@ -68,6 +72,9 @@ export default function AdminUsedAppliances() {
   }, [keyword, statusFilter])
 
   useEffect(() => {
+    if (authLoading) return
+    if (!canManage) return
+
     let cancelled = false
 
     void loadItems()
@@ -84,7 +91,7 @@ export default function AdminUsedAppliances() {
     return () => {
       cancelled = true
     }
-  }, [loadItems])
+  }, [authLoading, canManage, loadItems])
 
   useEffect(() => {
     let cancelled = false
@@ -234,6 +241,29 @@ export default function AdminUsedAppliances() {
     } catch (err: unknown) {
       setError(getApiMessage(err))
     }
+  }
+
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 pb-20">
+        <div className="p-4 text-center text-gray-400">加载中...</div>
+        <BottomNav />
+      </div>
+    )
+  }
+
+  if (!canManage) {
+    return (
+      <div className="min-h-screen bg-gray-50 pb-20">
+        <div className="p-4">
+          <h1 className="mb-4 text-lg font-bold">二手家电管理</h1>
+          <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
+            当前账号无权限管理二手家电。
+          </div>
+        </div>
+        <BottomNav />
+      </div>
+    )
   }
 
   return (

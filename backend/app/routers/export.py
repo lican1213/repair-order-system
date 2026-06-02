@@ -5,7 +5,7 @@ from fastapi.responses import StreamingResponse
 from openpyxl import Workbook
 from sqlalchemy.orm import Session
 
-from app.auth import get_current_user
+from app.auth import require_admin
 from app.database import get_db
 from app.models import Order, User
 from app.query_utils import apply_order_filters
@@ -60,7 +60,7 @@ def export_orders(
     scheduled_date_end: str | None = None,
     keyword: str | None = None,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_admin),
 ):
     """导出订单 Excel（需 JWT）。"""
     query = db.query(Order)

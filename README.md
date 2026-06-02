@@ -153,7 +153,7 @@ APP_BASE_URL=https://your-domain.example
 默认来自 `.env`：
 
 - 用户名：`admin`
-- 密码：`ChangeThisStrongPassword123!`
+- 密码：`<后台管理员密码>`
 
 **正式部署必须修改默认密码。**
 
