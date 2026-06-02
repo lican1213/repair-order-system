@@ -3,7 +3,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
 from openpyxl import Workbook
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.auth import require_admin
 from app.database import get_db
@@ -21,6 +21,7 @@ COLUMNS = [
     ("小区", "community"),
     ("地址", "address"),
     ("服务类型", "service_type"),
+    ("负责人", "assigned_username"),
     ("家电类型", "appliance_type"),
     ("品牌型号", "brand_model"),
     ("故障描述", "fault_description"),
@@ -54,6 +55,7 @@ def export_orders(
     status_filter: str | None = Query(None, alias="status"),
     followup_status: str | None = None,
     service_type: str | None = None,
+    assignee: str | None = None,
     created_date_start: str | None = None,
     created_date_end: str | None = None,
     scheduled_date_start: str | None = None,
@@ -63,12 +65,19 @@ def export_orders(
     current_user: User = Depends(require_admin),
 ):
     """导出订单 Excel（需 JWT）。"""
-    query = db.query(Order)
+    query = db.query(Order).options(joinedload(Order.assigned_user))
     query = apply_order_filters(
-        query, status_filter, followup_status, service_type,
-        created_date_start, created_date_end,
-        scheduled_date_start, scheduled_date_end,
-        keyword,
+        query=query,
+        status_filter=status_filter,
+        followup_status=followup_status,
+        service_type=service_type,
+        assignee=assignee,
+        current_user_id=current_user.id,
+        created_date_start=created_date_start,
+        created_date_end=created_date_end,
+        scheduled_date_start=scheduled_date_start,
+        scheduled_date_end=scheduled_date_end,
+        keyword=keyword,
     )
     orders = query.order_by(Order.created_at.desc()).all()
 

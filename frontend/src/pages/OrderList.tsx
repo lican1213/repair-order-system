@@ -3,10 +3,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import BottomNav from '../components/BottomNav'
 import StatusBadge from '../components/StatusBadge'
 import { getOrders, exportOrders } from '../api/orders'
+import { getUsers } from '../api/users'
 import { useAuth } from '../hooks/useAuth'
 import { ORDER_STATUSES, FOLLOWUP_STATUSES, SERVICE_TYPES } from '../utils/constants'
 import { canExportOrders } from '../utils/permissions'
 import type { Order } from '../types/order'
+import type { User } from '../types/user'
 
 export default function OrderList() {
   const navigate = useNavigate()
@@ -21,10 +23,12 @@ export default function OrderList() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [exporting, setExporting] = useState(false)
+  const [staffUsers, setStaffUsers] = useState<User[]>([])
 
   const statusFilter = searchParams.get('status') || ''
   const followupFilter = searchParams.get('followup_status') || ''
   const serviceTypeFilter = searchParams.get('service_type') || ''
+  const assigneeFilter = searchParams.get('assignee') || ''
   const keyword = searchParams.get('keyword') || ''
   const createdDateStart = searchParams.get('created_date_start') || ''
 
@@ -48,12 +52,30 @@ export default function OrderList() {
   const scheduledDateEnd = searchParams.get('scheduled_date_end') || ''
 
   useEffect(() => {
+    if (user?.role !== 'admin') return
+
+    let cancelled = false
+    void getUsers()
+      .then((data) => {
+        if (!cancelled) {
+          setStaffUsers(data.filter((item) => item.role === 'staff' && item.is_active))
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
+    }
+  }, [user?.role])
+
+  useEffect(() => {
     let cancelled = false
 
     void getOrders({
       status: statusFilter || undefined,
       followup_status: followupFilter || undefined,
       service_type: serviceTypeFilter === '维修' || serviceTypeFilter === '清洗' ? serviceTypeFilter : undefined,
+      assignee: assigneeFilter || undefined,
       keyword: keyword || undefined,
       created_date_start: createdDateStart || undefined,
       created_date_end: createdDateEnd || undefined,
@@ -82,7 +104,7 @@ export default function OrderList() {
     return () => {
       cancelled = true
     }
-  }, [statusFilter, followupFilter, serviceTypeFilter, keyword, createdDateStart, createdDateEnd, scheduledDateStart, scheduledDateEnd])
+  }, [statusFilter, followupFilter, serviceTypeFilter, assigneeFilter, keyword, createdDateStart, createdDateEnd, scheduledDateStart, scheduledDateEnd])
 
   const loadMore = async () => {
     setLoading(true)
@@ -91,6 +113,7 @@ export default function OrderList() {
         status: statusFilter || undefined,
         followup_status: followupFilter || undefined,
         service_type: serviceTypeFilter === '维修' || serviceTypeFilter === '清洗' ? serviceTypeFilter : undefined,
+        assignee: assigneeFilter || undefined,
         keyword: keyword || undefined,
         created_date_start: createdDateStart || undefined,
         created_date_end: createdDateEnd || undefined,
@@ -127,6 +150,7 @@ export default function OrderList() {
         status: statusFilter || undefined,
         followup_status: followupFilter || undefined,
         service_type: serviceTypeFilter === '维修' || serviceTypeFilter === '清洗' ? serviceTypeFilter : undefined,
+        assignee: assigneeFilter || undefined,
         keyword: keyword || undefined,
         created_date_start: createdDateStart || undefined,
         created_date_end: createdDateEnd || undefined,
@@ -183,6 +207,31 @@ export default function OrderList() {
             <option value="">全部服务类型</option>
             {SERVICE_TYPES.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
+
+          {user?.role === 'admin' && (
+            <select
+              value={assigneeFilter}
+              onChange={(e) => updateParam('assignee', e.target.value)}
+              className="min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            >
+              <option value="">全部负责人</option>
+              <option value="unassigned">未分配</option>
+              {staffUsers.map((staff) => (
+                <option key={staff.id} value={String(staff.id)}>{staff.username}</option>
+              ))}
+            </select>
+          )}
+
+          {user?.role === 'staff' && (
+            <select
+              value={assigneeFilter}
+              onChange={(e) => updateParam('assignee', e.target.value)}
+              className="min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            >
+              <option value="">全部负责人</option>
+              <option value="mine">只看我的</option>
+            </select>
+          )}
 
           <input
             type="text"
@@ -271,6 +320,9 @@ export default function OrderList() {
                 {order.service_type} · {order.appliance_type}{order.brand_model ? ` · ${order.brand_model}` : ''}
               </div>
               <div className="text-sm text-gray-500 truncate">{order.fault_description}</div>
+              <div className="text-xs text-gray-400 mt-1">
+                负责人: {order.assigned_username || '未分配'}
+              </div>
               <div className="text-xs text-gray-400 mt-1">
                 {order.scheduled_at
                   ? `预约: ${order.scheduled_at.replace('T', ' ').slice(0, 16)}`

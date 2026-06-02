@@ -39,6 +39,7 @@ class Order(Base):
     # 状态
     status = Column(String(20), default="新报修", nullable=False, index=True)
     followup_status = Column(String(20), default="未回访", nullable=False, index=True)
+    assigned_user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
 
     # 维修记录
     repair_result = Column(Text)
@@ -67,6 +68,11 @@ class Order(Base):
 
     # 关系
     repair_logs = relationship("RepairLog", back_populates="order", cascade="all, delete-orphan")
+    assigned_user = relationship("User", foreign_keys=[assigned_user_id])
+
+    @property
+    def assigned_username(self):
+        return self.assigned_user.username if self.assigned_user else None
 
     def __repr__(self):
         return f"<Order {self.order_no}>"

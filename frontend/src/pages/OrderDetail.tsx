@@ -3,15 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom'
 import Button from '../components/Button'
 import ImagePreviewModal from '../components/ImagePreviewModal'
 import StatusBadge from '../components/StatusBadge'
-import { getOrder, updateOrder } from '../api/orders'
+import { assignOrder, getOrder, updateOrder } from '../api/orders'
+import { getUsers } from '../api/users'
 import { useAuth } from '../hooks/useAuth'
 import { ORDER_STATUSES, FOLLOWUP_STATUSES } from '../utils/constants'
 import { copyText } from '../utils/clipboard'
 import { buildWarrantyUrl } from '../utils/url'
 import { getCurrentDateTimeLocalString, getTodayDateString, isPastDateTime, validateWarrantyDate } from '../utils/date'
 import { parseImagePaths } from '../utils/images'
-import { canWriteOrders } from '../utils/permissions'
+import { canAssignOrders, canEditOrder } from '../utils/permissions'
 import type { Order, OrderUpdateRequest } from '../types/order'
+import type { User } from '../types/user'
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>()
@@ -24,10 +26,14 @@ export default function OrderDetail() {
   const [success, setSuccess] = useState('')
   const [copyNotice, setCopyNotice] = useState('')
   const [previewImages, setPreviewImages] = useState<string[]>([])
+  const [assignmentUsers, setAssignmentUsers] = useState<User[]>([])
+  const [assignmentUserId, setAssignmentUserId] = useState('')
+  const [assignmentSaving, setAssignmentSaving] = useState(false)
   const fieldRefs = useRef<Record<string, HTMLElement | null>>({})
 
   const [form, setForm] = useState<OrderUpdateRequest>({})
-  const canEditOrder = canWriteOrders(user?.role)
+  const canAssignCurrentOrder = canAssignOrders(user?.role)
+  const canEditCurrentOrder = canEditOrder(user, order)
 
   // 字段级日期错误（useMemo 派生，见下方）
 
@@ -36,6 +42,7 @@ export default function OrderDetail() {
     getOrder(Number(id))
       .then((o) => {
         setOrder(o)
+        setAssignmentUserId(o.assigned_user_id ? String(o.assigned_user_id) : '')
         setForm({
           status: o.status,
           followup_status: o.followup_status,
@@ -51,6 +58,23 @@ export default function OrderDetail() {
       .catch(() => setError('订单不存在'))
       .finally(() => setLoading(false))
   }, [id])
+
+  useEffect(() => {
+    if (authLoading || !canAssignCurrentOrder) return
+
+    let cancelled = false
+    void getUsers()
+      .then((data) => {
+        if (!cancelled) {
+          setAssignmentUsers(data.filter((item) => item.role === 'staff' && item.is_active))
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
+    }
+  }, [authLoading, canAssignCurrentOrder])
 
   // 实时校验日期字段（纯派生，用 useMemo）
   const dateErrors = useMemo<Record<string, string>>(() => {
@@ -104,6 +128,26 @@ export default function OrderDetail() {
       setError(typeof msg === 'string' ? msg : '保存失败')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleSaveAssignment = async () => {
+    if (!id) return
+    setAssignmentSaving(true)
+    setError('')
+    setSuccess('')
+    try {
+      const updated = await assignOrder(Number(id), {
+        assigned_user_id: assignmentUserId ? Number(assignmentUserId) : null,
+      })
+      setOrder(updated)
+      setAssignmentUserId(updated.assigned_user_id ? String(updated.assigned_user_id) : '')
+      setSuccess('负责人已保存')
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { detail?: string } } }).response?.data?.detail
+      setError(typeof msg === 'string' ? msg : '负责人保存失败')
+    } finally {
+      setAssignmentSaving(false)
     }
   }
 
@@ -172,6 +216,37 @@ export default function OrderDetail() {
           <div className="text-xs text-gray-400">创建: {order.created_at.replace('T', ' ').slice(0, 19)}</div>
         </div>
 
+        {/* 负责人 */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
+          <h3 className="font-bold mb-2">负责人</h3>
+          {canAssignCurrentOrder ? (
+            <div className="flex flex-col gap-3">
+              <select
+                value={assignmentUserId}
+                onChange={(e) => setAssignmentUserId(e.target.value)}
+                className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm"
+              >
+                <option value="">未分配</option>
+                {order.assigned_user_id && !assignmentUsers.some((item) => item.id === order.assigned_user_id) && (
+                  <option value={String(order.assigned_user_id)} disabled>
+                    {order.assigned_username || '当前负责人'}（不可选）
+                  </option>
+                )}
+                {assignmentUsers.map((item) => (
+                  <option key={item.id} value={String(item.id)}>{item.username}</option>
+                ))}
+              </select>
+              <Button onClick={handleSaveAssignment} disabled={assignmentSaving}>
+                {assignmentSaving ? '保存中...' : '保存负责人'}
+              </Button>
+            </div>
+          ) : (
+            <div className="text-sm text-gray-700">
+              {order.assigned_username || '未分配'}
+            </div>
+          )}
+        </div>
+
         {/* 客户信息 */}
         <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
           <h3 className="font-bold mb-2">客户信息</h3>
@@ -219,7 +294,7 @@ export default function OrderDetail() {
           })()}
         </div>
 
-        {canEditOrder ? (
+        {canEditCurrentOrder ? (
           <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
             <h3 className="font-bold mb-3">维修记录</h3>
             <div className="flex flex-col gap-3">

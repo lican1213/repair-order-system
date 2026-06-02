@@ -73,6 +73,8 @@ def ensure_order_compat_columns():
             cursor.execute("ALTER TABLE orders ADD COLUMN longitude REAL")
         if "location_address" not in columns:
             cursor.execute("ALTER TABLE orders ADD COLUMN location_address TEXT")
+        if "assigned_user_id" not in columns:
+            cursor.execute("ALTER TABLE orders ADD COLUMN assigned_user_id INTEGER")
 
         cursor.execute(
             "UPDATE orders SET service_type = '维修' "
@@ -80,6 +82,9 @@ def ensure_order_compat_columns():
         )
         cursor.execute(
             "CREATE INDEX IF NOT EXISTS ix_orders_service_type ON orders(service_type)"
+        )
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS ix_orders_assigned_user_id ON orders(assigned_user_id)"
         )
 
         conn.commit()

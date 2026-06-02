@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.auth import hash_password, require_admin
 from app.constants import MAX_USER_ACCOUNTS
 from app.database import get_db
-from app.models import User
+from app.models import Order, User
 from app.schemas import (
     ResetUserPasswordRequest,
     UserCreateRequest,
@@ -13,6 +14,8 @@ from app.schemas import (
 )
 
 router = APIRouter()
+
+FINISHED_ORDER_STATUSES = ["已完成", "未成交"]
 
 
 def _is_original_admin(user: User) -> bool:
@@ -43,8 +46,22 @@ def list_users(
     current_user: User = Depends(require_admin),
 ):
     """Admin account list for the mobile account-management page."""
+    unfinished_counts = dict(
+        db.query(Order.assigned_user_id, func.count(Order.id))
+        .filter(
+            Order.assigned_user_id.isnot(None),
+            Order.status.notin_(FINISHED_ORDER_STATUSES),
+        )
+        .group_by(Order.assigned_user_id)
+        .all()
+    )
     users = db.query(User).order_by(User.id.asc()).all()
-    return [UserResponse.model_validate(user) for user in users]
+    responses = []
+    for user in users:
+        item = UserResponse.model_validate(user)
+        item.unfinished_assigned_count = int(unfinished_counts.get(user.id, 0))
+        responses.append(item)
+    return responses
 
 
 @router.post("/users", response_model=UserResponse)
@@ -128,6 +145,10 @@ def delete_user(
     user = _get_user_or_404(user_id, db)
     _reject_original_admin(user)
 
+    db.query(Order).filter(Order.assigned_user_id == user.id).update(
+        {Order.assigned_user_id: None},
+        synchronize_session=False,
+    )
     db.delete(user)
     db.commit()
     return {"message": "账号已删除"}

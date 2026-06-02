@@ -21,6 +21,8 @@ export interface Order {
   image_paths: string | null
   status: OrderStatus
   followup_status: FollowupStatus
+  assigned_user_id: number | null
+  assigned_username: string | null
   repair_result: string | null
   parts_used: string | null
   final_fee: number | null
@@ -83,4 +85,8 @@ export interface OrderUpdateRequest {
   warranty_until?: string
   warranty_note?: string
   completed_at?: string
+}
+
+export interface OrderAssignmentRequest {
+  assigned_user_id: number | null
 }

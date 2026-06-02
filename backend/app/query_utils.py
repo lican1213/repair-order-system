@@ -15,6 +15,8 @@ def apply_order_filters(
     status_filter: str | None = None,
     followup_status: str | None = None,
     service_type: str | None = None,
+    assignee: str | None = None,
+    current_user_id: int | None = None,
     created_date_start: str | None = None,
     created_date_end: str | None = None,
     scheduled_date_start: str | None = None,
@@ -45,8 +47,33 @@ def apply_order_filters(
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail=f"无效的服务类型: {service_type}",
-            )
+        )
         query = query.filter(Order.service_type == service_type)
+
+    if assignee and assignee != "all":
+        if assignee == "unassigned":
+            query = query.filter(Order.assigned_user_id.is_(None))
+        elif assignee == "mine":
+            if current_user_id is None:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="无法识别当前用户",
+                )
+            query = query.filter(Order.assigned_user_id == current_user_id)
+        else:
+            try:
+                assignee_id = int(assignee)
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"无效的负责人筛选: {assignee}",
+                )
+            if assignee_id <= 0:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"无效的负责人筛选: {assignee}",
+                )
+            query = query.filter(Order.assigned_user_id == assignee_id)
 
     if created_date_start or created_date_end:
         try:

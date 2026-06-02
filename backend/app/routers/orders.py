@@ -2,9 +2,9 @@ from datetime import date, datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
-from app.auth import get_current_user, require_staff_or_admin
+from app.auth import get_current_user, require_admin, require_staff_or_admin
 from app.constants import FOLLOWUP_STATUSES, ORDER_STATUSES
 from app.database import get_db
 from app.models import Order, RepairLog, User
@@ -12,6 +12,7 @@ from app.json_utils import normalize_json_array_text
 from app.schemas import (
     DashboardSummaryResponse,
     NewOrderNotificationResponse,
+    OrderAssignmentRequest,
     OrderNotificationItem,
     OrderListResponse,
     OrderResponse,
@@ -21,6 +22,29 @@ from app.query_utils import apply_order_filters
 from app.utils import generate_warranty_token
 
 router = APIRouter()
+
+
+def _get_order_or_404(order_id: int, db: Session) -> Order:
+    order = (
+        db.query(Order)
+        .options(joinedload(Order.assigned_user))
+        .filter(Order.id == order_id)
+        .first()
+    )
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="订单不存在",
+        )
+    return order
+
+
+def _can_modify_order(user: User, order: Order) -> bool:
+    if user.role == "admin":
+        return True
+    if user.role == "staff":
+        return order.assigned_user_id is None or order.assigned_user_id == user.id
+    return False
 
 
 # --- GET /api/orders/dashboard/summary ---
@@ -74,6 +98,7 @@ def get_dashboard_summary(
     # 最近 5 条订单
     recent = (
         db.query(Order)
+        .options(joinedload(Order.assigned_user))
         .order_by(Order.created_at.desc())
         .limit(5)
         .all()
@@ -100,6 +125,7 @@ def get_today_orders(
     today = date.today()
     orders = (
         db.query(Order)
+        .options(joinedload(Order.assigned_user))
         .filter(func.date(Order.scheduled_at) == today)
         .order_by(Order.scheduled_at.asc())
         .all()
@@ -117,6 +143,7 @@ def get_followup_orders(
     """待回访。已完成且未回访的订单。"""
     orders = (
         db.query(Order)
+        .options(joinedload(Order.assigned_user))
         .filter(Order.status == "已完成", Order.followup_status == "未回访")
         .order_by(Order.completed_at.asc())
         .all()
@@ -158,12 +185,34 @@ def get_order(
     current_user: User = Depends(get_current_user),
 ):
     """订单详情。"""
-    order = db.query(Order).filter(Order.id == order_id).first()
-    if not order:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="订单不存在",
-        )
+    order = _get_order_or_404(order_id, db)
+    return OrderResponse.model_validate(order)
+
+
+@router.patch("/{order_id}/assignment", response_model=OrderResponse)
+def assign_order(
+    order_id: int,
+    req: OrderAssignmentRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    """分配、改派或取消订单负责人。仅店主可操作。"""
+    order = _get_order_or_404(order_id, db)
+
+    if req.assigned_user_id is not None:
+        target = db.query(User).filter(User.id == req.assigned_user_id).first()
+        if target is None or target.role != "staff" or not target.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="只能分配给已启用的师傅账号",
+            )
+
+    if order.assigned_user_id != req.assigned_user_id:
+        order.assigned_user_id = req.assigned_user_id
+        order.updated_at = datetime.now(timezone.utc)
+        db.commit()
+
+    order = _get_order_or_404(order_id, db)
     return OrderResponse.model_validate(order)
 
 
@@ -177,11 +226,12 @@ def update_order(
     current_user: User = Depends(require_staff_or_admin),
 ):
     """更新订单。"""
-    order = db.query(Order).filter(Order.id == order_id).first()
-    if not order:
+    order = _get_order_or_404(order_id, db)
+
+    if not _can_modify_order(current_user, order):
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="订单不存在",
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="无权限修改该订单",
         )
 
     # 校验状态值
@@ -262,6 +312,7 @@ def list_orders(
     status_filter: str | None = Query(None, alias="status"),
     followup_status: str | None = None,
     service_type: str | None = None,
+    assignee: str | None = None,
     created_date_start: str | None = None,
     created_date_end: str | None = None,
     scheduled_date_start: str | None = None,
@@ -273,12 +324,19 @@ def list_orders(
     current_user: User = Depends(get_current_user),
 ):
     """订单列表。支持筛选和分页。"""
-    query = db.query(Order)
+    query = db.query(Order).options(joinedload(Order.assigned_user))
     query = apply_order_filters(
-        query, status_filter, followup_status, service_type,
-        created_date_start, created_date_end,
-        scheduled_date_start, scheduled_date_end,
-        keyword,
+        query=query,
+        status_filter=status_filter,
+        followup_status=followup_status,
+        service_type=service_type,
+        assignee=assignee,
+        current_user_id=current_user.id,
+        created_date_start=created_date_start,
+        created_date_end=created_date_end,
+        scheduled_date_start=scheduled_date_start,
+        scheduled_date_end=scheduled_date_end,
+        keyword=keyword,
     )
 
     # 总数

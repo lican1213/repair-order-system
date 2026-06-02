@@ -3,6 +3,7 @@ import type {
   DashboardSummary,
   NewOrderNotificationResponse,
   Order,
+  OrderAssignmentRequest,
   OrderListResponse,
   OrderUpdateRequest,
   ServiceType,
@@ -12,6 +13,7 @@ interface OrderListParams {
   status?: string
   followup_status?: string
   service_type?: ServiceType
+  assignee?: string
   created_date_start?: string
   created_date_end?: string
   scheduled_date_start?: string
@@ -33,6 +35,11 @@ export async function getOrder(id: number): Promise<Order> {
 
 export async function updateOrder(id: number, data: OrderUpdateRequest): Promise<Order> {
   const res = await client.patch<Order>(`/api/orders/${id}`, data)
+  return res.data
+}
+
+export async function assignOrder(id: number, data: OrderAssignmentRequest): Promise<Order> {
+  const res = await client.patch<Order>(`/api/orders/${id}/assignment`, data)
   return res.data
 }
 
@@ -62,6 +69,7 @@ interface ExportParams {
   status?: string
   followup_status?: string
   service_type?: ServiceType
+  assignee?: string
   created_date_start?: string
   created_date_end?: string
   scheduled_date_start?: string

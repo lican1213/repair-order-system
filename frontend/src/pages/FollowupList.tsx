@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import BottomNav from '../components/BottomNav'
 import { getFollowups, updateOrder } from '../api/orders'
 import { useAuth } from '../hooks/useAuth'
-import { canWriteOrders } from '../utils/permissions'
+import { canEditOrder } from '../utils/permissions'
 import type { Order, FollowupStatus } from '../types/order'
 
 export default function FollowupList() {
@@ -12,7 +12,6 @@ export default function FollowupList() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const canMarkFollowup = canWriteOrders(user?.role)
 
   useEffect(() => {
     let cancelled = false
@@ -77,7 +76,7 @@ export default function FollowupList() {
                   详情
                 </button>
               </div>
-              {canMarkFollowup && (
+              {canEditOrder(user, order) && (
                 <div className="flex gap-2 mt-2">
                   <button onClick={() => handleMark(order.id, '已回访')} className="flex-1 min-h-[44px] bg-green-600 text-white rounded-lg text-sm font-medium">
                     已回访

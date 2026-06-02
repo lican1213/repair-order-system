@@ -33,6 +33,7 @@ class UserResponse(BaseModel):
     is_active: bool
     created_at: datetime
     last_login_at: Optional[datetime]
+    unfinished_assigned_count: Optional[int] = None
 
     model_config = {"from_attributes": True}
 
@@ -220,6 +221,8 @@ class OrderResponse(BaseModel):
     image_paths: Optional[str]
     status: str
     followup_status: str
+    assigned_user_id: Optional[int] = None
+    assigned_username: Optional[str] = None
     repair_result: Optional[str]
     parts_used: Optional[str]
     final_fee: Optional[float]
@@ -288,6 +291,10 @@ class OrderUpdateRequest(BaseModel):
                 if "保修" in str(e):
                     raise
         return self
+
+
+class OrderAssignmentRequest(BaseModel):
+    assigned_user_id: Optional[int] = None
 
 
 class DashboardSummaryResponse(BaseModel):

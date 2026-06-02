@@ -254,6 +254,12 @@ export default function AdminUsers() {
                   </div>
                 ) : (
                   <div className="space-y-3">
+                    {item.role === 'staff' && (item.unfinished_assigned_count || 0) > 0 && (
+                      <div className="rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800">
+                        该师傅还有 {item.unfinished_assigned_count} 张未完成负责工单。停用或降级不会自动改派，删除账号后相关工单会变为未分配。
+                      </div>
+                    )}
+
                     <div>
                       <label className="mb-1 block text-sm text-gray-500">权限</label>
                       <select
