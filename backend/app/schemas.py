@@ -1,3 +1,4 @@
+import re
 from datetime import date, datetime
 from typing import Optional
 
@@ -260,6 +261,91 @@ class OrderListResponse(BaseModel):
     page: int
     page_size: int
     has_more: bool
+
+
+class OrderManualCreateRequest(BaseModel):
+    customer_name: str = Field(..., min_length=1, max_length=50)
+    phone: str = Field(..., max_length=50)
+    community: str = Field(..., min_length=1, max_length=100)
+    address: str = Field(..., min_length=1, max_length=200)
+    service_type: str = Field("维修", description="服务类型")
+    appliance_type: str = Field(..., description="家电类型")
+    brand_model: Optional[str] = Field(None, max_length=100)
+    fault_description: str = Field(..., min_length=1, max_length=2000)
+    preferred_time: Optional[str] = Field(None, max_length=100)
+    scheduled_at: Optional[datetime] = Field(None, description="预约上门时间")
+    is_urgent: bool = False
+    status: str = Field("新报修", description="订单状态")
+    remark: Optional[str] = Field(None, max_length=2000)
+    assigned_user_id: Optional[int] = None
+
+    @field_validator("customer_name", "community", "address", "fault_description")
+    @classmethod
+    def strip_required_text_fields(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("该字段不能为空")
+        return value
+
+    @field_validator("preferred_time", "remark")
+    @classmethod
+    def strip_optional_text_fields(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return None
+        value = value.strip()
+        return value or None
+
+    @field_validator("brand_model")
+    @classmethod
+    def normalize_brand_model(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return None
+        value = value.strip()
+        return value or None
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("电话不能为空")
+        if not re.fullmatch(r"[0-9()\-\s]+", value):
+            raise ValueError("电话只能包含数字、空格、括号和短横线")
+        digit_count = sum(ch.isdigit() for ch in value)
+        if digit_count < 5 or digit_count > 20:
+            raise ValueError("电话长度需在 5 到 20 位之间")
+        return value
+
+    @field_validator("service_type")
+    @classmethod
+    def validate_service_type(cls, value: str) -> str:
+        if value not in SERVICE_TYPES:
+            raise ValueError(f"无效的服务类型: {value}")
+        return value
+
+    @field_validator("appliance_type")
+    @classmethod
+    def validate_appliance_type(cls, value: str) -> str:
+        if value not in APPLIANCE_TYPES:
+            raise ValueError(f"不支持的家电类型: {value}")
+        return value
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, value: str) -> str:
+        if value not in ORDER_STATUSES:
+            raise ValueError(f"无效的订单状态: {value}")
+        return value
+
+    @model_validator(mode="after")
+    def validate_dates_and_other(self):
+        if self.scheduled_at and self.scheduled_at < datetime.now():
+            raise ValueError("预约时间不能早于当前时间")
+        if self.status == "已预约" and self.scheduled_at is None:
+            raise ValueError("状态为\"已预约\"时，请填写预约上门时间")
+        if self.appliance_type == "其他" and not self.brand_model:
+            raise ValueError("选择\"其他\"时，请填写具体家电类型或品牌型号")
+        return self
 
 
 class OrderUpdateRequest(BaseModel):

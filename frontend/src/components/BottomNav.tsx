@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 const tabs = [
   { path: '/admin/dashboard', label: '首页', icon: '🏠' },
+  { path: '/admin/today', label: '今日', icon: '📅' },
   { path: '/admin/orders', label: '订单', icon: '📋' },
   { path: '/admin/profile', label: '我的', icon: '👤' },
 ]

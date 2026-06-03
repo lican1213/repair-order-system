@@ -1,9 +1,15 @@
+import os
 from pathlib import Path
+
 from pydantic_settings import BaseSettings
 
 
 # backend/ 目录的绝对路径
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# 测试态可通过 DISABLE_DOTENV=1 关闭 .env 加载，避免测试读取部署机的真实配置
+# （例如真实的企业微信机器人凭据）。生产环境不设置该变量，.env 照常加载。
+_ENV_FILE = None if os.environ.get("DISABLE_DOTENV") == "1" else str(BASE_DIR / ".env")
 
 
 class Settings(BaseSettings):
@@ -46,9 +52,20 @@ class Settings(BaseSettings):
     WECOM_BOT_CHAT_ID: str = ""
 
     model_config = {
-        "env_file": str(BASE_DIR / ".env"),
+        "env_file": _ENV_FILE,
         "env_file_encoding": "utf-8",
     }
 
 
 settings = Settings()
+
+
+def resolve_upload_dir() -> Path:
+    """上传根目录（绝对路径）。相对路径按 BASE_DIR 解析。
+
+    main 挂载 /uploads、后台上传、公开报修上传都用它，保证三者目录一致。
+    """
+    upload_dir = Path(settings.UPLOAD_DIR)
+    if not upload_dir.is_absolute():
+        upload_dir = BASE_DIR / upload_dir
+    return upload_dir

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.auth import require_admin, require_staff_or_admin
-from app.config import settings, BASE_DIR
+from app.config import settings, resolve_upload_dir
 from app.database import get_db
 from app.models import User
 from app.schemas import PublicUploadResponse
@@ -19,14 +19,7 @@ MAX_FILE_SIZE = settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024  # 5MB
 MAX_FILES = settings.PUBLIC_UPLOAD_MAX_FILES  # 5
 
 
-def _resolve_uploads_dir() -> Path:
-    uploads_dir = Path(settings.UPLOAD_DIR)
-    if not uploads_dir.is_absolute():
-        uploads_dir = BASE_DIR / uploads_dir
-    return uploads_dir
-
-
-UPLOADS_DIR = _resolve_uploads_dir()
+UPLOADS_DIR = resolve_upload_dir()
 
 
 async def _save_images(files: list[UploadFile], target_dir: Path, url_prefix: str) -> PublicUploadResponse:

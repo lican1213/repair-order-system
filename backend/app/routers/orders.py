@@ -12,6 +12,7 @@ from app.json_utils import normalize_json_array_text
 from app.schemas import (
     DashboardSummaryResponse,
     NewOrderNotificationResponse,
+    OrderManualCreateRequest,
     OrderAssignmentRequest,
     OrderNotificationItem,
     OrderListResponse,
@@ -19,7 +20,7 @@ from app.schemas import (
     OrderUpdateRequest,
 )
 from app.query_utils import apply_order_filters
-from app.utils import generate_warranty_token
+from app.utils import generate_order_no, generate_warranty_token
 
 router = APIRouter()
 
@@ -45,6 +46,16 @@ def _can_modify_order(user: User, order: Order) -> bool:
     if user.role == "staff":
         return order.assigned_user_id is None or order.assigned_user_id == user.id
     return False
+
+
+def _get_assignable_staff_or_400(user_id: int, db: Session) -> User:
+    target = db.query(User).filter(User.id == user_id).first()
+    if target is None or target.role != "staff" or not target.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="只能分配给已启用的师傅账号",
+        )
+    return target
 
 
 # --- GET /api/orders/dashboard/summary ---
@@ -178,6 +189,57 @@ def get_new_order_notifications(
 
 # --- GET /api/orders/{id} ---
 
+@router.post("", response_model=OrderResponse)
+def create_order(
+    req: OrderManualCreateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_staff_or_admin),
+):
+    """后台手动建单。"""
+    assigned_user_id = None
+    if current_user.role == "admin":
+        if req.assigned_user_id is not None:
+            assigned_user_id = _get_assignable_staff_or_400(req.assigned_user_id, db).id
+    else:
+        assigned_user_id = current_user.id
+
+    now = datetime.now(timezone.utc)
+    order = Order(
+        order_no=generate_order_no(db),
+        customer_name=req.customer_name,
+        phone=req.phone,
+        community=req.community,
+        address=req.address,
+        service_type=req.service_type,
+        appliance_type=req.appliance_type,
+        brand_model=req.brand_model,
+        fault_description=req.fault_description,
+        preferred_time=req.preferred_time,
+        scheduled_at=req.scheduled_at,
+        is_urgent=req.is_urgent,
+        status=req.status,
+        followup_status="未回访",
+        assigned_user_id=assigned_user_id,
+        remark=req.remark,
+        source="后台录入",
+        completed_at=now if req.status == "已完成" else None,
+    )
+    db.add(order)
+    db.flush()
+    db.add(
+        RepairLog(
+            order_id=order.id,
+            old_status=None,
+            new_status=order.status,
+            note="后台录入",
+        )
+    )
+    db.commit()
+
+    order = _get_order_or_404(order.id, db)
+    return OrderResponse.model_validate(order)
+
+
 @router.get("/{order_id}", response_model=OrderResponse)
 def get_order(
     order_id: int,
@@ -200,12 +262,7 @@ def assign_order(
     order = _get_order_or_404(order_id, db)
 
     if req.assigned_user_id is not None:
-        target = db.query(User).filter(User.id == req.assigned_user_id).first()
-        if target is None or target.role != "staff" or not target.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="只能分配给已启用的师傅账号",
-            )
+        _get_assignable_staff_or_400(req.assigned_user_id, db)
 
     if order.assigned_user_id != req.assigned_user_id:
         order.assigned_user_id = req.assigned_user_id

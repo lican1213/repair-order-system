@@ -48,6 +48,23 @@ export interface OrderListResponse {
   has_more: boolean
 }
 
+export interface OrderCreateRequest {
+  customer_name: string
+  phone: string
+  community: string
+  address: string
+  service_type: ServiceType
+  appliance_type: string
+  brand_model?: string
+  fault_description: string
+  preferred_time?: string
+  scheduled_at?: string
+  is_urgent?: boolean
+  status?: OrderStatus
+  remark?: string
+  assigned_user_id?: number
+}
+
 export interface DashboardSummary {
   today_count: number
   new_count: number

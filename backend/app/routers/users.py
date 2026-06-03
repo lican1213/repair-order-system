@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -131,6 +133,7 @@ def reset_user_password(
     _reject_original_admin(user)
 
     user.password_hash = hash_password(req.password)
+    user.password_changed_at = datetime.now(timezone.utc)
     db.commit()
     return {"message": "密码已重置"}
 

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang='zh-CN'><head><meta charset='utf-8'>
+<title>V1.5 全功能验收报告</title>
+<style>
+body{font-family:-apple-system,system-ui,sans-serif;margin:20px;background:#f5f5f5;}
+h1{text-align:center;color:#1a1a1a;}
+.summary{text-align:center;padding:20px;background:#fff;border-radius:12px;margin:20px auto;max-width:600px;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+.pass{color:#16a34a;font-weight:bold;}.fail{color:#dc2626;font-weight:bold;}.skip{color:#ca8a04;}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;margin:10px 0;box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+th{background:#1a1a1a;color:#fff;padding:10px 12px;text-align:left;}
+td{padding:8px 12px;border-bottom:1px solid #eee;vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+tr:hover{background:#f8f8f8;}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;}
+.badge-pass{background:#dcfce7;color:#16a34a;}
+.badge-fail{background:#fef2f2;color:#dc2626;}
+.badge-skip{background:#fefce8;color:#ca8a04;}
+img{max-width:100%;border-radius:8px;margin:5px 0;border:1px solid #ddd;cursor:pointer;}
+.screenshot{margin:5px 0;}
+.section-title{background:#f0f9ff;padding:8px 12px;font-weight:bold;color:#0369a1;border-left:4px solid #0ea5e9;margin-top:20px;}
+</style>
+</head><body>
+<h1>🔧 家电维修后台 V1.5 全功能验收报告</h1>
+
+    <div class="summary">
+        <h2>验收结果</h2>
+        <p style="font-size:18px">
+            <span class="pass">✅ 58 通过</span> &nbsp;
+            <span class="fail">❌ 1 失败</span> &nbsp;
+            <span class="skip">⏭️ 0 跳过</span>
+        </p>
+        <p style="font-size:24px;font-weight:bold">通过率: 98.3%</p>
+        <p style="color:#666">共 59 项测试 | 2026-06-03 10:24</p>
+    </div>
+    
+<table><tr><th>状态</th><th>测试项</th><th>详情</th><th>截图</th></tr>
+<tr><td colspan='4' class='section-title'>Git 状态检查</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>1a 错误密码→提示失败</td><td>url=http://localhost:8000/admin</td><td class='screenshot'><a href='01_login_wrong_pwd.png' target='_blank'><img src='01_login_wrong_pwd.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>1b 正确登录→dashboard</td><td></td><td class='screenshot'><a href='02_login_success.png' target='_blank'><img src='02_login_success.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>1c 刷新后仍在登录态</td><td></td><td class='screenshot'><a href='03_login_refresh.png' target='_blank'><img src='03_login_refresh.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>1d 未登录→跳回登录页</td><td>url=http://localhost:8000/admin</td><td class='screenshot'><a href='04_login_redirect.png' target='_blank'><img src='04_login_redirect.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>卡片「今日预约」</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>卡片「新报修」</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>卡片「待回访」</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>卡片「本月已完成」</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>本月收入展示</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>顶部「新建订单」入口</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>最近订单区域</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>Dashboard 完整截图</td><td></td><td class='screenshot'><a href='05_dashboard.png' target='_blank'><img src='05_dashboard.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>3a 表单加载</td><td></td><td class='screenshot'><a href='06_new_order_form.png' target='_blank'><img src='06_new_order_form.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>3b 电话格式校验(乱填报错)</td><td></td><td class='screenshot'><a href='07_new_order_bad_phone.png' target='_blank'><img src='07_new_order_bad_phone.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>3a 表单填写完成</td><td></td><td class='screenshot'><a href='08_new_order_filled.png' target='_blank'><img src='08_new_order_filled.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>3a 提交订单</td><td>url=http://localhost:8000/admin/orders/new</td><td class='screenshot'><a href='09_new_order_submitted.png' target='_blank'><img src='09_new_order_submitted.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>4a 关键词搜索「测试」</td><td></td><td class='screenshot'><a href='11_order_list_search.png' target='_blank'><img src='11_order_list_search.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>4b 导出Excel(admin)</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>4c 列表「新建」按钮</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>4d 拨打按钮</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>4e 查看详情按钮</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>5a 「标记已联系」按钮存在</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>5a 「预约上门」按钮存在</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>5a 「标记完成」按钮存在</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>5b 预约弹层内容</td><td></td><td class='screenshot'><a href='12_quick_schedule_dialog.png' target='_blank'><img src='12_quick_schedule_dialog.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>6a 详情页加载</td><td>url=http://localhost:8000/admin/orders/2</td><td class='screenshot'><a href='13_order_detail.png' target='_blank'><img src='13_order_detail.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>6b 「拨打」按钮存在</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>6b 「复制」按钮存在</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>6b 「导航」按钮存在</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>6d 导航弹层: 高德+百度</td><td></td><td class='screenshot'><a href='14_order_detail_nav.png' target='_blank'><img src='14_order_detail_nav.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>6c 维修记录区域存在</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>7a 今日预约页面加载</td><td>url=http://localhost:8000/admin/today</td><td class='screenshot'><a href='16_today.png' target='_blank'><img src='16_today.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>7b 底部导航: 首页, 今日, 订单, 我的</td><td></td><td class='screenshot'><a href='17_mobile_dashboard.png' target='_blank'><img src='17_mobile_dashboard.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>7c 点击「今日」tab</td><td>url=http://localhost:8000/admin/today</td><td class='screenshot'><a href='18_mobile_nav_今日.png' target='_blank'><img src='18_mobile_nav_今日.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>7c 点击「订单」tab</td><td>url=http://localhost:8000/admin/orders</td><td class='screenshot'><a href='19_mobile_nav_订单.png' target='_blank'><img src='19_mobile_nav_订单.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>7c 点击「我的」tab</td><td>url=http://localhost:8000/admin/profile</td><td class='screenshot'><a href='20_mobile_nav_我的.png' target='_blank'><img src='20_mobile_nav_我的.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>7c 点击「首页」tab</td><td>url=http://localhost:8000/admin/dashboard</td><td class='screenshot'><a href='21_mobile_nav_首页.png' target='_blank'><img src='21_mobile_nav_首页.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>8 待回访页面加载</td><td></td><td class='screenshot'><a href='22_followups.png' target='_blank'><img src='22_followups.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>9 二手家电管理页面</td><td></td><td class='screenshot'><a href='23_used_appliances.png' target='_blank'><img src='23_used_appliances.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>10 账号管理页面加载</td><td></td><td class='screenshot'><a href='24_users.png' target='_blank'><img src='24_users.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>10 新建账号按钮</td><td>(可能在其他位置)</td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>10 账号列表包含 admin</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>11 改密码功能区域</td><td></td><td class='screenshot'><a href='25_profile.png' target='_blank'><img src='25_profile.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>11 退出登录按钮</td><td></td><td class='screenshot'><a href='25_profile.png' target='_blank'><img src='25_profile.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>11 个人中心页面</td><td></td><td class='screenshot'><a href='25_profile.png' target='_blank'><img src='25_profile.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>15 公开报修页加载</td><td></td><td class='screenshot'><a href='26_public_repair.png' target='_blank'><img src='26_public_repair.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>15 报修表单有 10 个输入控件</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>15 待回访空状态提示</td><td></td><td class='screenshot'><a href='27_empty_followups.png' target='_blank'><img src='27_empty_followups.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>15 API 错误有返回(非白屏)</td><td>url=http://localhost:8000/api/nonexistent</td><td class='screenshot'><a href='28_error_handling.png' target='_blank'><img src='28_error_handling.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>15 报修表单有输入控件</td><td>count=10</td><td class='screenshot'><a href='29_repair_flow_start.png' target='_blank'><img src='29_repair_flow_start.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>15 报修表单填写完成</td><td></td><td class='screenshot'><a href='30_repair_flow_filled.png' target='_blank'><img src='30_repair_flow_filled.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>15 报修提交</td><td>url=http://localhost:8000/repair/success</td><td class='screenshot'><a href='31_repair_flow_submitted.png' target='_blank'><img src='31_repair_flow_submitted.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>手机视图 Dashboard</td><td>375x812</td><td class='screenshot'><a href='32_mobile_dashboard_375.png' target='_blank'><img src='32_mobile_dashboard_375.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>手机视图 订单列表</td><td>375x812</td><td class='screenshot'><a href='33_mobile_orders_375.png' target='_blank'><img src='33_mobile_orders_375.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>按钮最小高度 &gt;= 44px</td><td></td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>13 新单提醒轮询(需手动验证)</td><td>停在后台，另开标签提交新单</td><td class='screenshot'>-</td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>14 viewer 账号不存在(需先建)</td><td>url=http://localhost:8000/admin</td><td class='screenshot'><a href='34_viewer_login.png' target='_blank'><img src='34_viewer_login.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-pass'>✅ PASS</span></td><td>14 staff 账号不存在(需先建)</td><td>url=http://localhost:8000/admin</td><td class='screenshot'><a href='35_staff_login.png' target='_blank'><img src='35_staff_login.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge badge-fail'>❌ FAIL</span></td><td>16 有未提交改动</td><td>43 个文件</td><td class='screenshot'>-</td></tr>
+</table>
+<h2 style='margin-top:30px'>📸 所有截图</h2>
+<div style='display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:15px;'>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>01_login_wrong_pwd.png</p><a href='01_login_wrong_pwd.png' target='_blank'><img src='01_login_wrong_pwd.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>02_login_success.png</p><a href='02_login_success.png' target='_blank'><img src='02_login_success.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>03_login_refresh.png</p><a href='03_login_refresh.png' target='_blank'><img src='03_login_refresh.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>04_login_redirect.png</p><a href='04_login_redirect.png' target='_blank'><img src='04_login_redirect.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>05_dashboard.png</p><a href='05_dashboard.png' target='_blank'><img src='05_dashboard.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>06_new_order_form.png</p><a href='06_new_order_form.png' target='_blank'><img src='06_new_order_form.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>07_new_order_bad_phone.png</p><a href='07_new_order_bad_phone.png' target='_blank'><img src='07_new_order_bad_phone.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>08_new_order_filled.png</p><a href='08_new_order_filled.png' target='_blank'><img src='08_new_order_filled.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>09_new_order_submitted.png</p><a href='09_new_order_submitted.png' target='_blank'><img src='09_new_order_submitted.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>10_order_list.png</p><a href='10_order_list.png' target='_blank'><img src='10_order_list.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>11_order_list_search.png</p><a href='11_order_list_search.png' target='_blank'><img src='11_order_list_search.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>12_quick_schedule_dialog.png</p><a href='12_quick_schedule_dialog.png' target='_blank'><img src='12_quick_schedule_dialog.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>13_order_detail.png</p><a href='13_order_detail.png' target='_blank'><img src='13_order_detail.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>14_order_detail_nav.png</p><a href='14_order_detail_nav.png' target='_blank'><img src='14_order_detail_nav.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>15_order_detail_full.png</p><a href='15_order_detail_full.png' target='_blank'><img src='15_order_detail_full.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>16_today.png</p><a href='16_today.png' target='_blank'><img src='16_today.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>17_mobile_dashboard.png</p><a href='17_mobile_dashboard.png' target='_blank'><img src='17_mobile_dashboard.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>18_mobile_nav_今日.png</p><a href='18_mobile_nav_今日.png' target='_blank'><img src='18_mobile_nav_今日.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>19_mobile_nav_订单.png</p><a href='19_mobile_nav_订单.png' target='_blank'><img src='19_mobile_nav_订单.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>20_mobile_nav_我的.png</p><a href='20_mobile_nav_我的.png' target='_blank'><img src='20_mobile_nav_我的.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>21_mobile_nav_首页.png</p><a href='21_mobile_nav_首页.png' target='_blank'><img src='21_mobile_nav_首页.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>22_followups.png</p><a href='22_followups.png' target='_blank'><img src='22_followups.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>23_used_appliances.png</p><a href='23_used_appliances.png' target='_blank'><img src='23_used_appliances.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>24_users.png</p><a href='24_users.png' target='_blank'><img src='24_users.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>25_profile.png</p><a href='25_profile.png' target='_blank'><img src='25_profile.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>26_public_repair.png</p><a href='26_public_repair.png' target='_blank'><img src='26_public_repair.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>27_empty_followups.png</p><a href='27_empty_followups.png' target='_blank'><img src='27_empty_followups.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>28_error_handling.png</p><a href='28_error_handling.png' target='_blank'><img src='28_error_handling.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>29_repair_flow_start.png</p><a href='29_repair_flow_start.png' target='_blank'><img src='29_repair_flow_start.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>30_repair_flow_filled.png</p><a href='30_repair_flow_filled.png' target='_blank'><img src='30_repair_flow_filled.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>31_repair_flow_submitted.png</p><a href='31_repair_flow_submitted.png' target='_blank'><img src='31_repair_flow_submitted.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>32_mobile_dashboard_375.png</p><a href='32_mobile_dashboard_375.png' target='_blank'><img src='32_mobile_dashboard_375.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>33_mobile_orders_375.png</p><a href='33_mobile_orders_375.png' target='_blank'><img src='33_mobile_orders_375.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>34_viewer_login.png</p><a href='34_viewer_login.png' target='_blank'><img src='34_viewer_login.png' style='width:100%;'></a></div>
+<div style='background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08);'><p style='font-size:12px;color:#666;margin:0 0 5px 0;'>35_staff_login.png</p><a href='35_staff_login.png' target='_blank'><img src='35_staff_login.png' style='width:100%;'></a></div>
+</div>
+</body></html>

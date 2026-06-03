@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BottomNav from '../components/BottomNav'
+import NavButton from '../components/NavButton'
+import OrderQuickActions from '../components/OrderQuickActions'
 import StatusBadge from '../components/StatusBadge'
 import { getTodayOrders } from '../api/orders'
+import { useAuth } from '../hooks/useAuth'
 import type { Order } from '../types/order'
 
 export default function TodayOrders() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -16,6 +20,10 @@ export default function TodayOrders() {
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
+
+  const replaceOrder = (updatedOrder: Order) => {
+    setOrders((prev) => prev.map((item) => (item.id === updatedOrder.id ? updatedOrder : item)))
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -37,6 +45,7 @@ export default function TodayOrders() {
               </div>
               <div className="font-medium">{order.customer_name}</div>
               <div className="text-sm text-gray-600">{order.appliance_type}{order.brand_model ? ` · ${order.brand_model}` : ''}</div>
+              <div className="text-sm text-gray-500 mt-1">{order.community} {order.address}</div>
               <div className="text-sm text-blue-600 mt-1">
                 预约: {order.scheduled_at?.replace('T', ' ').slice(0, 16)}
               </div>
@@ -44,10 +53,16 @@ export default function TodayOrders() {
                 <a href={`tel:${order.phone}`} className="flex-1 min-h-[44px] flex items-center justify-center bg-green-50 text-green-700 rounded-lg text-sm font-medium">
                   📞 拨打
                 </a>
+                <NavButton
+                  community={order.community}
+                  address={order.address}
+                  className="flex-1 min-h-[44px] flex items-center justify-center rounded-lg bg-blue-50 text-sm font-medium text-blue-700"
+                />
                 <button onClick={() => navigate(`/admin/orders/${order.id}`)} className="flex-1 min-h-[44px] flex items-center justify-center bg-blue-50 text-blue-700 rounded-lg text-sm font-medium">
                   查看详情
                 </button>
               </div>
+              <OrderQuickActions user={user} order={order} onUpdated={replaceOrder} />
             </div>
           ))}
         </div>

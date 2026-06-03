@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import Button from '../components/Button'
+import { IconTag, IconChevronRight } from '../components/icons'
 
 interface PriceItem {
   name: string
@@ -93,31 +93,47 @@ export default function PricingPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
-      <main className="max-w-lg mx-auto px-4 py-5">
-        <header className="mb-5">
-          <h1 className="text-2xl font-bold text-gray-900">清洗服务价格表</h1>
-          <p className="mt-2 text-sm leading-6 text-gray-600">
-            以下价格为起步参考价，具体费用以师傅电话沟通或现场检查确认为准。
-          </p>
-        </header>
+    <div className="min-h-screen bg-cream pb-12">
+      <header className="rounded-b-[28px] bg-gradient-to-br from-amber-400 via-orange-400 to-orange-500 px-5 pb-9 pt-6 text-white shadow-sm">
+        <div className="mx-auto max-w-lg">
+          <button
+            type="button"
+            onClick={() => navigate('/repair')}
+            className="mb-3 inline-flex min-h-[36px] items-center gap-1 text-sm font-medium text-white/90 active:text-white"
+          >
+            <IconChevronRight className="h-4 w-4 rotate-180" />
+            返回报修
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/25 backdrop-blur-sm">
+              <IconTag className="h-7 w-7" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold leading-tight">清洗服务价格表</h1>
+              <p className="mt-0.5 text-sm text-white/90">起步参考价 · 以电话或现场确认为准</p>
+            </div>
+          </div>
+        </div>
+      </header>
 
-        <section className="mb-5 rounded-lg border border-amber-200 bg-amber-50 p-4">
+      <main className="mx-auto -mt-5 max-w-lg px-4">
+        <section className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
           <p className="text-sm leading-6 text-amber-900">{DISCLAIMER}</p>
         </section>
 
         <div className="space-y-4">
           {PRICE_GROUPS.map((group) => (
-            <section key={group.title} className="rounded-lg border border-gray-200 bg-white shadow-sm">
-              <div className="border-b border-gray-100 px-4 py-3">
+            <section key={group.title} className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-orange-100/70">
+              <div className="flex items-center gap-2 border-b border-orange-50 bg-orange-50/40 px-4 py-3">
+                <span className="h-4 w-1.5 rounded-full bg-brand-400" />
                 <h2 className="text-base font-semibold text-gray-900">{group.title}</h2>
               </div>
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-orange-50">
                 {group.items.map((item) => (
                   <div key={`${group.title}-${item.name}`} className="px-4 py-3">
                     <div className="flex items-start justify-between gap-3">
                       <p className="min-w-0 flex-1 text-sm leading-6 text-gray-800">{item.name}</p>
-                      <p className="shrink-0 text-right text-sm font-semibold leading-6 text-blue-700">{item.price}</p>
+                      <p className="shrink-0 text-right text-sm font-bold leading-6 text-brand-600">{item.price}</p>
                     </div>
                     {item.note && <p className="mt-1 text-xs leading-5 text-gray-500">{item.note}</p>}
                   </div>
@@ -127,11 +143,15 @@ export default function PricingPage() {
           ))}
         </div>
 
-        <section className="mt-5 rounded-lg border border-gray-200 bg-white p-4">
-          <p className="mb-4 text-sm leading-6 text-gray-600">{DISCLAIMER}</p>
-          <Button type="button" fullWidth onClick={() => navigate('/repair')}>
+        <section className="mt-5 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-orange-100/70">
+          <p className="mb-4 text-sm leading-6 text-gray-500">{DISCLAIMER}</p>
+          <button
+            type="button"
+            onClick={() => navigate('/repair')}
+            className="flex h-14 w-full items-center justify-center rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-base font-semibold text-white shadow-lg shadow-orange-500/30 transition active:scale-[0.99]"
+          >
             我要报修 / 预约清洗
-          </Button>
+          </button>
         </section>
       </main>
     </div>

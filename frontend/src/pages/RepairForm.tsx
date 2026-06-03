@@ -1,10 +1,21 @@
 import { useState, useRef, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import Button from '../components/Button'
 import Input from '../components/Input'
 import Select from '../components/Select'
 import TextArea from '../components/TextArea'
 import ImageUploader from '../components/ImageUploader'
+import {
+  IconWrench,
+  IconSparkles,
+  IconUser,
+  IconMapPin,
+  IconClock,
+  IconCamera,
+  IconTag,
+  IconSofa,
+  IconChevronRight,
+  IconFlame,
+} from '../components/icons'
 import { APPLIANCE_TYPES, SERVICE_TYPES } from '../utils/constants'
 import { getTodayDateString, isPastDate, isPastPreferredSlot, getTodaySlotHint } from '../utils/date'
 import { getFaultDescriptionCopy } from '../utils/orderCopy'
@@ -169,115 +180,163 @@ export default function RepairForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-8">
-      <div className="max-w-lg mx-auto p-4">
-        <h1 className="text-xl font-bold mb-6 text-center">报修申请</h1>
+    <div className="min-h-screen bg-cream pb-12">
+      {/* 暖色渐变头部 */}
+      <header className="rounded-b-[28px] bg-gradient-to-br from-amber-400 via-orange-400 to-orange-500 px-5 pb-9 pt-7 text-white shadow-sm">
+        <div className="mx-auto flex max-w-lg items-center gap-3">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/25 backdrop-blur-sm">
+            <IconWrench className="h-7 w-7" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold leading-tight">家电报修 · 清洗</h1>
+            <p className="mt-0.5 text-sm text-white/90">填一下信息，师傅尽快联系您</p>
+          </div>
+        </div>
+      </header>
 
-        <Link
-          to="/pricing"
-          className="mb-4 flex min-h-[44px] items-center justify-between gap-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-blue-700 active:bg-blue-100"
-        >
-          <span>
-            <span className="block text-sm font-semibold">查看清洗价格表</span>
-            <span className="mt-0.5 block text-xs text-blue-600">空调、洗衣机、油烟机等清洗起步价参考</span>
-          </span>
-          <span className="shrink-0 text-lg leading-none" aria-hidden="true">›</span>
-        </Link>
+      <div className="mx-auto -mt-5 max-w-lg px-4">
+        {/* 快捷入口 */}
+        <div className="mb-4 grid grid-cols-2 gap-3">
+          <Link
+            to="/pricing"
+            className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-orange-100 active:scale-[0.99]"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-brand-500">
+              <IconTag className="h-5 w-5" />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-gray-800">清洗价格表</span>
+              <span className="mt-0.5 block truncate text-xs text-gray-400">起步价参考</span>
+            </span>
+          </Link>
 
-        <Link
-          to="/used"
-          className="mb-4 flex min-h-[44px] items-center justify-between gap-3 rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-emerald-700 active:bg-emerald-100"
-        >
-          <span>
-            <span className="block text-sm font-semibold">查看二手家电</span>
-            <span className="mt-0.5 block text-xs text-emerald-600">在售二手家电展示，具体请电话咨询</span>
-          </span>
-          <span className="shrink-0 text-lg leading-none" aria-hidden="true">›</span>
-        </Link>
+          <Link
+            to="/used"
+            className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm ring-1 ring-orange-100 active:scale-[0.99]"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-brand-500">
+              <IconSofa className="h-5 w-5" />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-gray-800">二手家电</span>
+              <span className="mt-0.5 block truncate text-xs text-gray-400">在售展示 · 电话咨询</span>
+            </span>
+          </Link>
+        </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">{error}</div>
+          <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-600">{error}</div>
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* 服务类型 */}
-          <div>
-            <label className="text-sm font-medium text-gray-700 mb-2 block">服务类型 *</label>
-            <div className="grid grid-cols-2 gap-2">
-              {SERVICE_TYPES.map((serviceType) => (
-                <button
-                  key={serviceType}
-                  type="button"
-                  onClick={() => update('service_type', serviceType)}
-                  className={`min-h-[52px] rounded-lg border px-4 py-3 text-base font-semibold transition-colors ${
-                    form.service_type === serviceType
-                      ? 'border-blue-600 bg-blue-600 text-white'
-                      : 'border-gray-300 bg-white text-gray-700 active:bg-gray-50'
-                  }`}
-                >
-                  {serviceType}
-                </button>
-              ))}
+          <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-orange-100/70">
+            <label className="mb-3 block text-base font-semibold text-gray-800">想要什么服务？</label>
+            <div className="grid grid-cols-2 gap-3">
+              {SERVICE_TYPES.map((serviceType) => {
+                const active = form.service_type === serviceType
+                const Icon = serviceType === '清洗' ? IconSparkles : IconWrench
+                return (
+                  <button
+                    key={serviceType}
+                    type="button"
+                    onClick={() => update('service_type', serviceType)}
+                    className={`flex min-h-[56px] items-center justify-center gap-2 rounded-2xl border-2 px-4 py-3 text-base font-semibold transition-colors ${
+                      active
+                        ? 'border-brand-500 bg-brand-500 text-white shadow-sm shadow-orange-500/25'
+                        : 'border-orange-100 bg-orange-50/40 text-gray-600 active:bg-orange-50'
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    {serviceType}
+                  </button>
+                )
+              })}
             </div>
-          </div>
+          </section>
 
-          {/* 姓名/称呼 */}
-          <div ref={(el) => { fieldRefs.current.customer_name = el }}>
-            <Input label="姓名 / 称呼 *" placeholder="例如：刘小姐、任先生、张老板" value={form.customer_name} onChange={(e) => update('customer_name', e.target.value)} />
-            {fieldErrors.customer_name && <p className="text-red-600 text-sm mt-1">{fieldErrors.customer_name}</p>}
-          </div>
+          {/* 联系方式 */}
+          <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-orange-100/70">
+            <div className="mb-3 flex items-center gap-2 text-gray-800">
+              <IconUser className="h-5 w-5 text-brand-500" />
+              <h2 className="text-base font-semibold">联系方式</h2>
+            </div>
+            <div className="flex flex-col gap-4">
+              {/* 姓名/称呼 */}
+              <div ref={(el) => { fieldRefs.current.customer_name = el }}>
+                <Input tone="warm" label="姓名 / 称呼 *" placeholder="例如：刘小姐、任先生、张老板" value={form.customer_name} onChange={(e) => update('customer_name', e.target.value)} />
+                {fieldErrors.customer_name && <p className="text-red-600 text-sm mt-1">{fieldErrors.customer_name}</p>}
+              </div>
 
-          {/* 手机号 */}
-          <div ref={(el) => { fieldRefs.current.phone = el }}>
-            <Input label="手机号 *" placeholder="11位手机号" type="tel" inputMode="numeric" maxLength={11} value={form.phone} onChange={handlePhoneChange} />
-            {phoneError && <p className="text-red-600 text-sm mt-1">{phoneError}</p>}
-            {fieldErrors.phone && !phoneError && <p className="text-red-600 text-sm mt-1">{fieldErrors.phone}</p>}
-          </div>
+              {/* 手机号 */}
+              <div ref={(el) => { fieldRefs.current.phone = el }}>
+                <Input tone="warm" label="手机号 *" placeholder="11位手机号" type="tel" inputMode="numeric" maxLength={11} value={form.phone} onChange={handlePhoneChange} />
+                {phoneError && <p className="text-red-600 text-sm mt-1">{phoneError}</p>}
+                {fieldErrors.phone && !phoneError && <p className="text-red-600 text-sm mt-1">{fieldErrors.phone}</p>}
+              </div>
 
-          {/* 小区 */}
-          <div ref={(el) => { fieldRefs.current.community = el }}>
-            <Input label="小区 *" placeholder="小区名称，例如：阳光小区" value={form.community} onChange={(e) => update('community', e.target.value)} />
-            {fieldErrors.community && <p className="text-red-600 text-sm mt-1">{fieldErrors.community}</p>}
-          </div>
+              {/* 小区 */}
+              <div ref={(el) => { fieldRefs.current.community = el }}>
+                <Input tone="warm" label="小区 *" placeholder="小区名称，例如：阳光小区" value={form.community} onChange={(e) => update('community', e.target.value)} />
+                {fieldErrors.community && <p className="text-red-600 text-sm mt-1">{fieldErrors.community}</p>}
+              </div>
 
-          {/* 详细地址 */}
-          <div ref={(el) => { fieldRefs.current.address = el }}>
-            <Input label="详细地址 *" placeholder="楼栋-单元-门牌号，例如：3号楼2单元501" value={form.address} onChange={(e) => update('address', e.target.value)} />
-            <p className="text-xs text-gray-500 mt-1">师傅上门前会电话确认地址，请保持电话畅通。</p>
-            {fieldErrors.address && <p className="text-red-600 text-sm mt-1">{fieldErrors.address}</p>}
-          </div>
+              {/* 详细地址 */}
+              <div ref={(el) => { fieldRefs.current.address = el }}>
+                <Input tone="warm" label="详细地址 *" placeholder="楼栋-单元-门牌号，例如：3号楼2单元501" value={form.address} onChange={(e) => update('address', e.target.value)} />
+                <p className="mt-1.5 flex items-start gap-1.5 text-xs text-gray-400">
+                  <IconMapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  师傅上门前会电话确认地址，请保持电话畅通。
+                </p>
+                {fieldErrors.address && <p className="text-red-600 text-sm mt-1">{fieldErrors.address}</p>}
+              </div>
+            </div>
+          </section>
 
-          {/* 家电类型 */}
-          <div>
-            <Select label="家电类型 *" options={APPLIANCE_TYPES} value={form.appliance_type} onChange={(e) => update('appliance_type', e.target.value)} />
-            {form.appliance_type === '其他' && (
-              <p className="text-xs text-gray-500 mt-1">你选择了"其他"，请在下方填写具体家电类型和品牌型号，例如：净水器、小厨宝、消毒柜、破壁机等。</p>
-            )}
-          </div>
+          {/* 设备与问题 */}
+          <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-orange-100/70">
+            <div className="mb-3 flex items-center gap-2 text-gray-800">
+              <IconWrench className="h-5 w-5 text-brand-500" />
+              <h2 className="text-base font-semibold">设备与问题</h2>
+            </div>
+            <div className="flex flex-col gap-4">
+              {/* 家电类型 */}
+              <div>
+                <Select tone="warm" label="家电类型 *" options={APPLIANCE_TYPES} value={form.appliance_type} onChange={(e) => update('appliance_type', e.target.value)} />
+                {form.appliance_type === '其他' && (
+                  <p className="text-xs text-gray-500 mt-1">你选择了"其他"，请在下方填写具体家电类型和品牌型号，例如：净水器、小厨宝、消毒柜、破壁机等。</p>
+                )}
+              </div>
 
-          {/* 品牌型号 */}
-          <div ref={(el) => { fieldRefs.current.brand_model = el }}>
-            <Input
-              label={form.appliance_type === '其他' ? '具体家电类型 / 品牌型号 *' : '品牌型号（可选）'}
-              placeholder={form.appliance_type === '其他' ? '例如：净水器 小米 MRH112；小厨宝 美的 F05' : '如：格力 KFR-35GW'}
-              value={form.brand_model} onChange={(e) => update('brand_model', e.target.value)}
-            />
-            {fieldErrors.brand_model && <p className="text-red-600 text-sm mt-1">{fieldErrors.brand_model}</p>}
-          </div>
+              {/* 品牌型号 */}
+              <div ref={(el) => { fieldRefs.current.brand_model = el }}>
+                <Input
+                  tone="warm"
+                  label={form.appliance_type === '其他' ? '具体家电类型 / 品牌型号 *' : '品牌型号（可选）'}
+                  placeholder={form.appliance_type === '其他' ? '例如：净水器 小米 MRH112；小厨宝 美的 F05' : '如：格力 KFR-35GW'}
+                  value={form.brand_model} onChange={(e) => update('brand_model', e.target.value)}
+                />
+                {fieldErrors.brand_model && <p className="text-red-600 text-sm mt-1">{fieldErrors.brand_model}</p>}
+              </div>
 
-          {/* 故障描述 */}
-          <div ref={(el) => { fieldRefs.current.fault_description = el }}>
-            <TextArea label={faultCopy.label} placeholder={faultCopy.placeholder} value={form.fault_description} onChange={(e) => update('fault_description', e.target.value)} />
-            {fieldErrors.fault_description && <p className="text-red-600 text-sm mt-1">{fieldErrors.fault_description}</p>}
-          </div>
+              {/* 故障描述 */}
+              <div ref={(el) => { fieldRefs.current.fault_description = el }}>
+                <TextArea tone="warm" label={faultCopy.label} placeholder={faultCopy.placeholder} value={form.fault_description} onChange={(e) => update('fault_description', e.target.value)} />
+                {fieldErrors.fault_description && <p className="text-red-600 text-sm mt-1">{fieldErrors.fault_description}</p>}
+              </div>
+            </div>
+          </section>
 
           {/* 希望上门时间：日期 + 时间段 */}
-          <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">希望上门时间（可选）</label>
+          <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-orange-100/70">
+            <div className="mb-3 flex items-center gap-2 text-gray-800">
+              <IconClock className="h-5 w-5 text-brand-500" />
+              <h2 className="text-base font-semibold">希望上门时间<span className="ml-1 text-xs font-normal text-gray-400">可选</span></h2>
+            </div>
 
             <input type="date" value={preferredDate} min={getTodayDateString()}
               onChange={(e) => { setPreferredDate(e.target.value); setPreferredSlot('') }}
-              className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-base mb-2" />
+              className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-base mb-2 focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-300" />
             {dateError && <p className="text-red-600 text-sm mt-1">{dateError}</p>}
 
             {todaySlotHint && <p className="text-red-600 text-sm mt-1 mb-2">{todaySlotHint}</p>}
@@ -289,12 +348,12 @@ export default function RepairForm() {
                   <button key={slot} type="button"
                     disabled={disabled}
                     onClick={() => { if (!disabled) setPreferredSlot(preferredSlot === slot ? '' : slot) }}
-                    className={`min-h-[44px] px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                    className={`min-h-[44px] px-3 py-2 rounded-xl text-sm font-medium border transition-colors ${
                       disabled
                         ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
                         : preferredSlot === slot
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
+                        ? 'bg-brand-500 text-white border-brand-500'
+                        : 'bg-white text-gray-600 border-orange-100 active:bg-orange-50'
                     }`}>
                     {slot}
                   </button>
@@ -303,19 +362,34 @@ export default function RepairForm() {
             </div>
             {slotError && <p className="text-red-600 text-sm mt-1">{slotError}</p>}
             {fieldErrors.preferred_slot && !slotError && <p className="text-red-600 text-sm mt-1">{fieldErrors.preferred_slot}</p>}
-          </div>
 
-          {/* 紧急 */}
-          <label className="flex items-center gap-3 min-h-[44px]">
-            <input type="checkbox" checked={form.is_urgent} onChange={(e) => update('is_urgent', e.target.checked)} className="w-5 h-5" />
-            <span className="text-base">紧急（需尽快上门）</span>
-          </label>
+            {/* 紧急 */}
+            <label className={`mt-3 flex min-h-[48px] cursor-pointer items-center gap-3 rounded-xl border-2 px-3 transition-colors ${
+              form.is_urgent ? 'border-brand-500 bg-orange-50' : 'border-orange-100 bg-white'
+            }`}>
+              <input type="checkbox" checked={form.is_urgent} onChange={(e) => update('is_urgent', e.target.checked)} className="h-5 w-5 accent-brand-500" />
+              <IconFlame className={`h-5 w-5 ${form.is_urgent ? 'text-brand-500' : 'text-gray-400'}`} />
+              <span className="text-base text-gray-700">紧急（需尽快上门）</span>
+            </label>
+          </section>
 
-          <ImageUploader maxFiles={5} onChange={(paths) => setImagePaths(paths)} />
+          {/* 上传照片 */}
+          <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-orange-100/70">
+            <div className="mb-3 flex items-center gap-2 text-gray-800">
+              <IconCamera className="h-5 w-5 text-brand-500" />
+              <h2 className="text-base font-semibold">上传照片<span className="ml-1 text-xs font-normal text-gray-400">可选，最多 5 张</span></h2>
+            </div>
+            <ImageUploader maxFiles={5} hideLabel tone="warm" onChange={(paths) => setImagePaths(paths)} />
+          </section>
 
-          <Button type="submit" fullWidth disabled={loading}>
-            {loading ? '提交中...' : `提交${form.service_type}申请`}
-          </Button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="mt-1 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-base font-semibold text-white shadow-lg shadow-orange-500/30 transition active:scale-[0.99] disabled:opacity-60"
+          >
+            {loading ? '提交中…' : `提交${form.service_type}申请`}
+            {!loading && <IconChevronRight className="h-5 w-5" />}
+          </button>
         </form>
       </div>
     </div>

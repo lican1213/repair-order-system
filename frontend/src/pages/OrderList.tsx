@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import BottomNav from '../components/BottomNav'
+import OrderQuickActions from '../components/OrderQuickActions'
 import StatusBadge from '../components/StatusBadge'
 import { getOrders, exportOrders } from '../api/orders'
 import { getUsers } from '../api/users'
 import { useAuth } from '../hooks/useAuth'
 import { ORDER_STATUSES, FOLLOWUP_STATUSES, SERVICE_TYPES } from '../utils/constants'
-import { canExportOrders } from '../utils/permissions'
+import { canExportOrders, canWriteOrders } from '../utils/permissions'
 import type { Order } from '../types/order'
 import type { User } from '../types/user'
 
@@ -15,6 +16,7 @@ export default function OrderList() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { user } = useAuth()
   const canExport = canExportOrders(user?.role)
+  const canCreate = canWriteOrders(user?.role)
 
   const [orders, setOrders] = useState<Order[]>([])
   const [total, setTotal] = useState(0)
@@ -174,6 +176,10 @@ export default function OrderList() {
     }
   }
 
+  const replaceInList = (updatedOrder: Order) => {
+    setOrders((prev) => prev.map((item) => (item.id === updatedOrder.id ? updatedOrder : item)))
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <div className="p-4">
@@ -296,15 +302,26 @@ export default function OrderList() {
 
         <div className="flex items-center justify-between mb-3">
           <span className="text-xs text-gray-400">共 {total} 条</span>
-          {canExport && (
-            <button
-              onClick={handleExport}
-              disabled={exporting}
-              className="min-h-[44px] px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
-            >
-              {exporting ? '导出中...' : '导出 Excel'}
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {canCreate && (
+              <button
+                type="button"
+                onClick={() => navigate('/admin/orders/new')}
+                className="min-h-[44px] rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white"
+              >
+                ➕ 新建
+              </button>
+            )}
+            {canExport && (
+              <button
+                onClick={handleExport}
+                disabled={exporting}
+                className="min-h-[44px] px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+              >
+                {exporting ? '导出中...' : '导出 Excel'}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* 列表 */}
@@ -347,6 +364,7 @@ export default function OrderList() {
                   查看详情
                 </button>
               </div>
+              <OrderQuickActions user={user} order={order} onUpdated={replaceInList} />
             </div>
           ))}
 

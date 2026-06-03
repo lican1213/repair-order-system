@@ -6,6 +6,7 @@ import { getShopInfo } from '../api/public'
 import type { UsedAppliance } from '../types/usedAppliance'
 import type { ShopInfoResponse } from '../types/public'
 import { canUseNativeShare, shareOrCopy } from '../utils/share'
+import { IconPhone } from '../components/icons'
 
 const DISCLAIMER = '二手家电价格、成色和库存变动较快，页面信息仅供参考。具体价格、成色、配送、安装和售后说明以电话沟通确认为准。'
 
@@ -55,7 +56,7 @@ export default function UsedApplianceDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-cream flex items-center justify-center">
         <p className="text-gray-400">加载中...</p>
       </div>
     )
@@ -63,10 +64,10 @@ export default function UsedApplianceDetail() {
 
   if (notFound || !item) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-cream flex items-center justify-center p-4">
         <div className="text-center">
           <p className="text-lg font-medium text-gray-800">商品不存在或已下架</p>
-          <Link to="/used" className="mt-4 inline-block text-blue-600">返回二手家电列表</Link>
+          <Link to="/used" className="mt-4 inline-block text-brand-600">返回二手家电列表</Link>
         </div>
       </div>
     )
@@ -77,11 +78,11 @@ export default function UsedApplianceDetail() {
   const shareData = { title: item.title, text: shareText, url: window.location.href }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-8">
+    <div className="min-h-screen bg-cream pb-8">
       <div className="mx-auto max-w-lg">
         {/* Back bar */}
         <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-          <Link to="/used" className="text-sm text-blue-600">← 返回列表</Link>
+          <Link to="/used" className="text-sm font-medium text-brand-600">← 返回列表</Link>
           <button
             type="button"
             onClick={() => void handleShare()}
@@ -135,14 +136,14 @@ export default function UsedApplianceDetail() {
           <p className="text-2xl font-bold text-red-600">{item.price || '电话咨询'}</p>
 
           {item.condition_note && (
-            <div className="rounded-lg bg-gray-50 p-3">
+            <div className="rounded-xl bg-orange-50/50 p-3">
               <p className="text-xs text-gray-400 mb-1">成色说明</p>
               <p className="text-sm text-gray-700">{item.condition_note}</p>
             </div>
           )}
 
           {item.description && (
-            <div className="rounded-lg bg-gray-50 p-3">
+            <div className="rounded-xl bg-orange-50/50 p-3">
               <p className="text-xs text-gray-400 mb-1">详细描述</p>
               <p className="text-sm text-gray-700 leading-6">{item.description}</p>
             </div>
@@ -151,8 +152,9 @@ export default function UsedApplianceDetail() {
           {phone && (
             <a
               href={`tel:${phone}`}
-              className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-blue-600 text-base font-medium text-white active:bg-blue-700"
+              className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-base font-semibold text-white shadow-lg shadow-orange-500/30 transition active:scale-[0.99]"
             >
+              <IconPhone className="h-5 w-5" />
               电话咨询：{phone}
             </a>
           )}

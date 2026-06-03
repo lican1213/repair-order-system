@@ -4,7 +4,7 @@ import BottomNav from '../components/BottomNav'
 import StatusBadge from '../components/StatusBadge'
 import { getDashboardSummary } from '../api/orders'
 import { useAuth } from '../hooks/useAuth'
-import { canManageUsedAppliances } from '../utils/permissions'
+import { canManageUsedAppliances, canWriteOrders } from '../utils/permissions'
 import type { DashboardSummary } from '../types/order'
 
 export default function AdminDashboard() {
@@ -12,6 +12,7 @@ export default function AdminDashboard() {
   const { user } = useAuth()
   const [data, setData] = useState<DashboardSummary | null>(null)
   const canManageUsed = canManageUsedAppliances(user?.role)
+  const canCreateOrders = canWriteOrders(user?.role)
 
   useEffect(() => {
     getDashboardSummary().then(setData).catch(() => {})
@@ -29,6 +30,20 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-50 pb-20">
       <div className="p-4">
         <h1 className="text-lg font-bold mb-4">维修工单管理</h1>
+
+        {canCreateOrders && (
+          <button
+            type="button"
+            onClick={() => navigate('/admin/orders/new')}
+            className="mb-4 flex min-h-[52px] w-full items-center justify-between rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-left text-blue-700 active:bg-blue-100"
+          >
+            <span>
+              <span className="block text-sm font-semibold">➕ 新建订单</span>
+              <span className="mt-0.5 block text-xs text-blue-600">电话报修、上门登记，直接录入系统</span>
+            </span>
+            <span className="shrink-0 text-lg leading-none" aria-hidden="true">›</span>
+          </button>
+        )}
 
         {canManageUsed && (
           <button

@@ -9,13 +9,7 @@ export function getTodayDateString(): string {
 
 /** 返回本地当前时间 YYYY-MM-DDTHH:mm（用于 datetime-local min） */
 export function getCurrentDateTimeLocalString(): string {
-  const now = new Date()
-  const y = now.getFullYear()
-  const m = String(now.getMonth() + 1).padStart(2, '0')
-  const d = String(now.getDate()).padStart(2, '0')
-  const h = String(now.getHours()).padStart(2, '0')
-  const min = String(now.getMinutes()).padStart(2, '0')
-  return `${y}-${m}-${d}T${h}:${min}`
+  return formatDateTimeLocal(new Date())
 }
 
 /** 判断 YYYY-MM-DD 是否早于今天 */
@@ -67,4 +61,27 @@ export function validateWarrantyDate(warrantyUntil: string, completedAt?: string
 export function toDateInputValue(value?: string | null): string {
   if (!value) return ''
   return value.slice(0, 10)
+}
+
+function formatDateTimeLocal(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  const h = String(date.getHours()).padStart(2, '0')
+  const min = String(date.getMinutes()).padStart(2, '0')
+  return `${y}-${m}-${d}T${h}:${min}`
+}
+
+export function addHoursDateTimeLocal(hours: number): string {
+  const next = new Date()
+  next.setHours(next.getHours() + hours)
+  next.setSeconds(0, 0)
+  return formatDateTimeLocal(next)
+}
+
+export function presetDateTimeLocal(dayOffset: number, hour: number): string {
+  const next = new Date()
+  next.setDate(next.getDate() + dayOffset)
+  next.setHours(hour, 0, 0, 0)
+  return formatDateTimeLocal(next)
 }

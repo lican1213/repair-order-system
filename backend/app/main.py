@@ -5,20 +5,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.config import settings, BASE_DIR
+from app.config import settings, BASE_DIR, resolve_upload_dir
 from app.database import SessionLocal, init_db
 
 app = FastAPI(title="家电维修工单系统", version="1.0.0")
 
 
-def _resolve_uploads_dir() -> Path:
-    uploads_dir = Path(settings.UPLOAD_DIR)
-    if not uploads_dir.is_absolute():
-        uploads_dir = BASE_DIR / uploads_dir
-    return uploads_dir
-
-
-UPLOADS_DIR = _resolve_uploads_dir()
+UPLOADS_DIR = resolve_upload_dir()
 STATIC_DIR = BASE_DIR / "app" / "static"
 
 # CORS - 开发环境仅允许 localhost:5173

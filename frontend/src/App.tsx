@@ -12,6 +12,7 @@ import WarrantyPage from './pages/WarrantyPage'
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import OrderList from './pages/OrderList'
+import OrderCreate from './pages/OrderCreate'
 import OrderDetail from './pages/OrderDetail'
 import TodayOrders from './pages/TodayOrders'
 import FollowupList from './pages/FollowupList'
@@ -62,6 +63,7 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/orders" element={<OrderList />} />
+          <Route path="/admin/orders/new" element={<OrderCreate />} />
           <Route path="/admin/orders/:id" element={<OrderDetail />} />
           <Route path="/admin/today" element={<TodayOrders />} />
           <Route path="/admin/followups" element={<FollowupList />} />

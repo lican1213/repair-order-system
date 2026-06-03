@@ -9,7 +9,7 @@ from pathlib import Path
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, UploadFile, status
 from sqlalchemy.orm import Session
 
-from app.config import settings, BASE_DIR
+from app.config import settings, resolve_upload_dir
 from app.constants import APPLIANCE_TYPES
 from app.database import get_db
 from app.models import Order
@@ -32,6 +32,14 @@ ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
 MAX_FILE_SIZE = settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024  # 5MB
 MAX_FILES = settings.PUBLIC_UPLOAD_MAX_FILES  # 5
+
+# 上传根目录：与 main.py 挂载、后台上传保持一致，支持 UPLOAD_DIR 配置
+UPLOADS_DIR = resolve_upload_dir()
+
+
+def _uploads_path_from_url(url_path: str) -> Path:
+    """把 /uploads/... 访问路径映射到实际挂载目录。"""
+    return UPLOADS_DIR / url_path[len("/uploads/"):]
 
 # 限频常量
 UPLOAD_IP_LIMIT = 10        # 次
@@ -129,7 +137,7 @@ async def upload_images(files: list[UploadFile], request: Request):
             detail=f"最多上传 {MAX_FILES} 张图片",
         )
 
-    temp_dir = BASE_DIR / "uploads" / "orders" / "temp"
+    temp_dir = UPLOADS_DIR / "orders" / "temp"
     temp_dir.mkdir(parents=True, exist_ok=True)
 
     saved_paths = []
@@ -208,7 +216,7 @@ def submit_repair(
                     detail=f"无效的图片路径: {path}",
                 )
             # 检查文件是否存在
-            file_path = BASE_DIR / path.lstrip("/")
+            file_path = _uploads_path_from_url(path)
             if not file_path.is_file():
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -222,14 +230,14 @@ def submit_repair(
     # 移动图片从 temp 到正式目录
     final_image_paths = []
     for temp_path in validated_images:
-        temp_file = BASE_DIR / temp_path.lstrip("/")
+        temp_file = _uploads_path_from_url(temp_path)
         filename = temp_file.name
-        final_file = BASE_DIR / "uploads" / "orders" / filename
+        final_file = UPLOADS_DIR / "orders" / filename
 
         # 防止文件名冲突
         if final_file.exists():
             filename = secrets.token_urlsafe(16) + temp_file.suffix
-            final_file = BASE_DIR / "uploads" / "orders" / filename
+            final_file = UPLOADS_DIR / "orders" / filename
 
         shutil.move(str(temp_file), str(final_file))
         final_image_paths.append(f"/uploads/orders/{filename}")

@@ -1,5 +1,7 @@
 """Change password endpoint for logged-in admin."""
 
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -35,8 +37,9 @@ def change_password(
             detail="新密码不能与旧密码相同",
         )
 
-    # Update password hash
+    # Update password hash; bump password_changed_at to invalidate older tokens
     current_user.password_hash = hash_password(req.new_password)
+    current_user.password_changed_at = datetime.now(timezone.utc)
     db.commit()
 
     return {"message": "密码修改成功，请重新登录"}

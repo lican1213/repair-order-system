@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import Button from '../components/Button'
 import ImagePreviewModal from '../components/ImagePreviewModal'
+import NavButton from '../components/NavButton'
+import OrderQuickActions from '../components/OrderQuickActions'
 import StatusBadge from '../components/StatusBadge'
 import { assignOrder, getOrder, updateOrder } from '../api/orders'
 import { getUsers } from '../api/users'
@@ -216,6 +218,24 @@ export default function OrderDetail() {
           <div className="text-xs text-gray-400">创建: {order.created_at.replace('T', ' ').slice(0, 19)}</div>
         </div>
 
+        <OrderQuickActions
+          layout="bar"
+          user={user}
+          order={order}
+          onUpdated={(updated) => {
+            setOrder(updated)
+            setForm((prev) => ({
+              ...prev,
+              status: updated.status,
+              followup_status: updated.followup_status,
+              scheduled_at: updated.scheduled_at?.slice(0, 16) || '',
+              repair_result: updated.repair_result || '',
+              final_fee: updated.final_fee ?? undefined,
+              warranty_until: updated.warranty_until || '',
+            }))
+          }}
+        />
+
         {/* 负责人 */}
         <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
           <h3 className="font-bold mb-2">负责人</h3>
@@ -256,9 +276,14 @@ export default function OrderDetail() {
             <div className="flex justify-between"><span className="text-gray-500">小区</span><span>{order.community}</span></div>
             <div className="flex justify-between items-start"><span className="text-gray-500">地址</span><span className="text-right max-w-[60%]">{order.address}</span></div>
           </div>
-          <div className="flex gap-2 mt-3">
+          <div className="mt-3 flex gap-2">
             <a href={`tel:${order.phone}`} className="flex-1 min-h-[44px] flex items-center justify-center bg-green-50 text-green-700 rounded-lg text-sm font-medium">📞 拨打</a>
             <button onClick={handleCopyAddress} className="flex-1 min-h-[44px] flex items-center justify-center bg-gray-50 text-gray-700 rounded-lg text-sm font-medium">📋 复制地址</button>
+            <NavButton
+              community={order.community}
+              address={order.address}
+              className="flex-1 min-h-[44px] flex items-center justify-center rounded-lg bg-blue-50 text-sm font-medium text-blue-700"
+            />
           </div>
         </div>
 

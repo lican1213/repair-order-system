@@ -2,6 +2,7 @@ import client from './client'
 import type {
   DashboardSummary,
   NewOrderNotificationResponse,
+  OrderCreateRequest,
   Order,
   OrderAssignmentRequest,
   OrderListResponse,
@@ -30,6 +31,11 @@ export async function getOrders(params: OrderListParams = {}): Promise<OrderList
 
 export async function getOrder(id: number): Promise<Order> {
   const res = await client.get<Order>(`/api/orders/${id}`)
+  return res.data
+}
+
+export async function createOrder(data: OrderCreateRequest): Promise<Order> {
+  const res = await client.post<Order>('/api/orders', data)
   return res.data
 }
 

@@ -87,6 +87,8 @@ class User(Base):
     role = Column(String(20), default="admin")
     is_active = Column(Boolean, default=True)
     last_login_at = Column(DateTime)
+    # 密码最后修改时间：用于使该时点之前签发的 JWT 失效
+    password_changed_at = Column(DateTime)
     created_at = Column(DateTime, default=_utcnow, nullable=False)
 
     def __repr__(self):

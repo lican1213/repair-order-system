@@ -37,7 +37,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     expire = datetime.now(timezone.utc) + (
         expires_delta or timedelta(days=settings.ACCESS_TOKEN_EXPIRE_DAYS)
     )
-    to_encode.update({"exp": expire})
+    to_encode.update({"exp": expire, "iat": int(datetime.now(timezone.utc).timestamp())})
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
 
 
@@ -107,6 +107,17 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="用户已被禁用",
         )
+    # 改密/重置密码后，签发于修改时点之前的旧 token 立即失效
+    if user.password_changed_at is not None:
+        changed_at = user.password_changed_at
+        if changed_at.tzinfo is None:
+            changed_at = changed_at.replace(tzinfo=timezone.utc)
+        token_iat = payload.get("iat")
+        if token_iat is None or token_iat < int(changed_at.timestamp()):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="登录已失效，请重新登录",
+            )
     return user
 
 

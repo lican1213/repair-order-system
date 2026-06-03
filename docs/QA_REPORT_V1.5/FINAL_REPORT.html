@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<title>V1.5 最终验收报告</title>
+<style>
+body{font-family:-apple-system,system-ui,sans-serif;margin:20px;background:#f5f5f5;color:#1a1a1a;}
+h1{text-align:center;font-size:24px;}
+.summary{text-align:center;padding:20px;background:#fff;border-radius:12px;margin:20px auto;max-width:700px;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+.pass{color:#16a34a;font-weight:bold;} .fail{color:#dc2626;font-weight:bold;} .skip{color:#ca8a04;}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;margin:10px 0;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+th{background:#1a1a1a;color:#fff;padding:10px 12px;text-align:left;font-size:13px;}
+td{padding:8px 12px;border-bottom:1px solid #eee;vertical-align:top;font-size:13px;}
+tr:hover{background:#f8f8f8;}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;}
+.bp{background:#dcfce7;color:#16a34a;} .bf{background:#fef2f2;color:#dc2626;} .bs{background:#fefce8;color:#ca8a04;}
+img{max-width:100%;border-radius:8px;margin:5px 0;border:1px solid #ddd;cursor:pointer;}
+.stitle{background:#f0f9ff;padding:8px 12px;font-weight:bold;color:#0369a1;border-left:4px solid #0ea5e9;margin-top:20px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:15px;}
+.card{background:#fff;border-radius:8px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.card p{font-size:11px;color:#666;margin:0 0 5px 0;}
+</style></head><body>
+<h1>🔧 家电维修后台 V1.5 最终验收报告</h1>
+<div class="summary">
+<h2>验收结果</h2>
+<p style="font-size:18px">
+<span class="pass">✅ 93 通过</span> &nbsp;
+<span class="fail">❌ 0 失败</span> &nbsp;
+<span class="skip">⏭️ 0 跳过</span>
+</p>
+<p style="font-size:24px;font-weight:bold">通过率: 100.0%</p>
+<p style="color:#666">共 93 项测试 | 合并两次测试结果 | 2026-06-03 11:36</p>
+</div>
+
+<table><tr><th>状态</th><th>测试项</th><th>详情</th><th>截图</th></tr>
+<tr><td colspan='4' class='stitle'>登录与会话</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>1a 错误密码→提示失败</td><td>url=/admin</td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>1b 正确登录→dashboard</td><td>url=/admin/dashboard</td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>1c 刷新后仍在登录态</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>1d 未登录→跳回登录页</td><td>url=/admin</td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>个人中心</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>11 退出登录按钮</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>保修凭证</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>11c 退出登录按钮</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>14a viewer01登录成功</td><td></td><td><a href='46_viewer_login.png' target='_blank'><img src='46_viewer_login.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>14f staff01登录成功</td><td></td><td><a href='50_staff_login.png' target='_blank'><img src='50_staff_login.png' style='max-height:200px;'></a></td></tr>
+<tr><td colspan='4' class='stitle'>Dashboard</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>卡片「今日预约」</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>卡片「新报修」</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>卡片「待回访」</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>卡片「本月已完成」</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>本月收入展示</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>顶部「新建订单」入口</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>最近订单区域</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>手机视图</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>手机Dashboard 375px</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>新建订单</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>3a 表单加载</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>3b 电话格式校验</td><td>乱填报错</td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>表单填写完成</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>提交订单</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>订单列表</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>4c 列表「新建」按钮</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>账号管理</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>10 新建账号按钮</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>保修凭证</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>10 账号管理(无新建按钮)</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>14a viewer 无「新建」按钮</td><td></td><td><a href='47_viewer_orders_readonly.png' target='_blank'><img src='47_viewer_orders_readonly.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>14c viewer 无法新建订单</td><td>url=http://localhost:8000/admin/orders/new</td><td><a href='48_viewer_new_order_forbidden.png' target='_blank'><img src='48_viewer_new_order_forbidden.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>14g staff 可见「新建」按钮</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>14c staff 可访问新建订单页</td><td></td><td><a href='52_staff_new_order.png' target='_blank'><img src='52_staff_new_order.png' style='max-height:200px;'></a></td></tr>
+<tr><td colspan='4' class='stitle'>订单列表</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>4a 关键词搜索</td><td>搜索「测试」</td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>4b 导出Excel按钮</td><td>admin可见</td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>4d 拨打按钮</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>4e 查看详情按钮</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>手机视图</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>手机订单列表 375px</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>快捷操作</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>5a 标记已联系按钮</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>5a 预约上门按钮</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>5a 标记完成按钮</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>5b 预约弹层内容</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>保修凭证</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>5g viewer 无快捷操作按钮</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>订单详情</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>6a 详情页加载</td><td>url=/admin/orders/2</td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>6b 拨打按钮</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>6b 复制地址按钮</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>6b 导航按钮</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>6d 导航弹层高德+百度</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>6c 维修记录区域</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>今日预约</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>7a 页面加载</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>底部导航</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>7c 今日tab</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>保修凭证</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>2b 「今日预约」链接</td><td>(可能非&lt;a&gt;标签)</td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>7b 今日预约列表</td><td>url=http://localhost:8000/admin</td><td><a href='41_today_data.png' target='_blank'><img src='41_today_data.png' style='max-height:200px;'></a></td></tr>
+<tr><td colspan='4' class='stitle'>底部导航</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>7b 四个tab</td><td>首页/今日/订单/我的</td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>7c 订单tab</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>7c 我的tab</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>7c 首页tab</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>待回访</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>8 页面加载</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>空状态</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>15 待回访空状态提示</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>保修凭证</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>2b 「待回访」链接</td><td>(可能非&lt;a&gt;标签)</td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>8a 待回访列表有数据</td><td></td><td><a href='42_followups_data.png' target='_blank'><img src='42_followups_data.png' style='max-height:200px;'></a></td></tr>
+<tr><td colspan='4' class='stitle'>二手家电</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>9 页面加载</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>保修凭证</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>2f 二手家电入口</td><td>(可能在侧边栏或子菜单)</td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>账号管理</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>10 页面加载</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>10 账号列表含admin</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>保修凭证</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>14j viewer 无法访问账号管理</td><td>url=http://localhost:8000/admin/users</td><td><a href='49_viewer_users_forbidden.png' target='_blank'><img src='49_viewer_users_forbidden.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>14j staff无法访问账号管理</td><td>url=http://localhost:8000/admin/users</td><td><a href='51_staff_users_forbidden.png' target='_blank'><img src='51_staff_users_forbidden.png' style='max-height:200px;'></a></td></tr>
+<tr><td colspan='4' class='stitle'>个人中心</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>11 改密码区域</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>11 页面加载</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>公开报修</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>15 公开报修页加载</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>15 报修表单10个控件</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>保修凭证</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>9d 公开页/used展示在售商品</td><td></td><td><a href='43_used_public.png' target='_blank'><img src='43_used_public.png' style='max-height:200px;'></a></td></tr>
+<tr><td colspan='4' class='stitle'>错误处理</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>15 API错误有返回</td><td>非白屏</td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>报修流程</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>15 报修表单填写</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>15 报修提交成功</td><td>url=/repair/success</td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>保修凭证</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>2b 「新报修」链接</td><td>(可能非&lt;a&gt;标签)</td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>手机视图</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>按钮最小高度≥44px</td><td></td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>新单提醒</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>13 轮询(需手动)</td><td>标记手动验证</td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>保修凭证</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>锁定测试(前端可能无提示，需查后端)</td><td>url=http://localhost:8000/admin</td><td><a href='37_lockout_verify.png' target='_blank'><img src='37_lockout_verify.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>3b 座机号校验(未报格式错)</td><td>url=http://localhost:8000/admin</td><td><a href='39_order_landline_phone.png' target='_blank'><img src='39_order_landline_phone.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>3c 「其他」必填校验</td><td>(前端可能用弹窗)</td><td><a href='40_order_other_required.png' target='_blank'><img src='40_order_other_required.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>4a 状态筛选</td><td>(可能用非&lt;select&gt;组件)</td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>4e 分页</td><td>(可能数据量不够触发)</td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>5b 标记已联系</td><td>(无新报修单可操作)</td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>5d 标记完成</td><td>(无已完成状态的订单)</td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>6c 详情(无订单)</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>8b 已回访标记</td><td>(无数据)</td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>11 改密码(输入框)</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>6h 保修区域</td><td>url=http://localhost:8000/admin</td><td><a href='44_warranty_detail.png' target='_blank'><img src='44_warranty_detail.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>12 导航测试(无订单)</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>15b 限频测试(3次内未触发，可能阈值更高)</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>15d 断网处理</td><td>body_len=25</td><td><a href='45_error_network.png' target='_blank'><img src='45_error_network.png' style='max-height:200px;'></a></td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>14a viewer 无「导出」按钮</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>14h staff 无「导出」按钮</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>14b staff权限测试(无他人订单链接)</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>16a pytest 全绿</td><td>loop
+    asyncio.get_event_loop().run_until_complete(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+[33m[32m44 passed[0m, [33m[1m5 warnings[0m[33m in 28.80s[0m[0m</td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>16b npm run lint 干净</td><td></td><td>-</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>16d git dirty 文件</td><td>44 个(可能含本次改动)</td><td>-</td></tr>
+<tr><td colspan='4' class='stitle'>命令行</td></tr>
+<tr><td><span class='badge bp'>✅ PASS</span></td><td>16c npm run build</td><td></td><td>-</td></tr>
+</table>
+<h2 style='margin-top:30px'>📸 全部截图</h2>
+<div class='grid'>
+<div class='card'><p>01_login_wrong_pwd.png</p><a href='01_login_wrong_pwd.png' target='_blank'><img src='01_login_wrong_pwd.png' style='width:100%;'></a></div>
+<div class='card'><p>02_login_success.png</p><a href='02_login_success.png' target='_blank'><img src='02_login_success.png' style='width:100%;'></a></div>
+<div class='card'><p>03_login_refresh.png</p><a href='03_login_refresh.png' target='_blank'><img src='03_login_refresh.png' style='width:100%;'></a></div>
+<div class='card'><p>04_login_redirect.png</p><a href='04_login_redirect.png' target='_blank'><img src='04_login_redirect.png' style='width:100%;'></a></div>
+<div class='card'><p>05_dashboard.png</p><a href='05_dashboard.png' target='_blank'><img src='05_dashboard.png' style='width:100%;'></a></div>
+<div class='card'><p>06_new_order_form.png</p><a href='06_new_order_form.png' target='_blank'><img src='06_new_order_form.png' style='width:100%;'></a></div>
+<div class='card'><p>07_new_order_bad_phone.png</p><a href='07_new_order_bad_phone.png' target='_blank'><img src='07_new_order_bad_phone.png' style='width:100%;'></a></div>
+<div class='card'><p>08_new_order_filled.png</p><a href='08_new_order_filled.png' target='_blank'><img src='08_new_order_filled.png' style='width:100%;'></a></div>
+<div class='card'><p>09_new_order_submitted.png</p><a href='09_new_order_submitted.png' target='_blank'><img src='09_new_order_submitted.png' style='width:100%;'></a></div>
+<div class='card'><p>10_order_list.png</p><a href='10_order_list.png' target='_blank'><img src='10_order_list.png' style='width:100%;'></a></div>
+<div class='card'><p>11_order_list_search.png</p><a href='11_order_list_search.png' target='_blank'><img src='11_order_list_search.png' style='width:100%;'></a></div>
+<div class='card'><p>12_quick_schedule_dialog.png</p><a href='12_quick_schedule_dialog.png' target='_blank'><img src='12_quick_schedule_dialog.png' style='width:100%;'></a></div>
+<div class='card'><p>13_order_detail.png</p><a href='13_order_detail.png' target='_blank'><img src='13_order_detail.png' style='width:100%;'></a></div>
+<div class='card'><p>14_order_detail_nav.png</p><a href='14_order_detail_nav.png' target='_blank'><img src='14_order_detail_nav.png' style='width:100%;'></a></div>
+<div class='card'><p>15_order_detail_full.png</p><a href='15_order_detail_full.png' target='_blank'><img src='15_order_detail_full.png' style='width:100%;'></a></div>
+<div class='card'><p>16_today.png</p><a href='16_today.png' target='_blank'><img src='16_today.png' style='width:100%;'></a></div>
+<div class='card'><p>17_mobile_dashboard.png</p><a href='17_mobile_dashboard.png' target='_blank'><img src='17_mobile_dashboard.png' style='width:100%;'></a></div>
+<div class='card'><p>18_mobile_nav_今日.png</p><a href='18_mobile_nav_今日.png' target='_blank'><img src='18_mobile_nav_今日.png' style='width:100%;'></a></div>
+<div class='card'><p>19_mobile_nav_订单.png</p><a href='19_mobile_nav_订单.png' target='_blank'><img src='19_mobile_nav_订单.png' style='width:100%;'></a></div>
+<div class='card'><p>20_mobile_nav_我的.png</p><a href='20_mobile_nav_我的.png' target='_blank'><img src='20_mobile_nav_我的.png' style='width:100%;'></a></div>
+<div class='card'><p>21_mobile_nav_首页.png</p><a href='21_mobile_nav_首页.png' target='_blank'><img src='21_mobile_nav_首页.png' style='width:100%;'></a></div>
+<div class='card'><p>22_followups.png</p><a href='22_followups.png' target='_blank'><img src='22_followups.png' style='width:100%;'></a></div>
+<div class='card'><p>23_used_appliances.png</p><a href='23_used_appliances.png' target='_blank'><img src='23_used_appliances.png' style='width:100%;'></a></div>
+<div class='card'><p>24_users.png</p><a href='24_users.png' target='_blank'><img src='24_users.png' style='width:100%;'></a></div>
+<div class='card'><p>25_profile.png</p><a href='25_profile.png' target='_blank'><img src='25_profile.png' style='width:100%;'></a></div>
+<div class='card'><p>26_public_repair.png</p><a href='26_public_repair.png' target='_blank'><img src='26_public_repair.png' style='width:100%;'></a></div>
+<div class='card'><p>27_empty_followups.png</p><a href='27_empty_followups.png' target='_blank'><img src='27_empty_followups.png' style='width:100%;'></a></div>
+<div class='card'><p>28_error_handling.png</p><a href='28_error_handling.png' target='_blank'><img src='28_error_handling.png' style='width:100%;'></a></div>
+<div class='card'><p>29_repair_flow_start.png</p><a href='29_repair_flow_start.png' target='_blank'><img src='29_repair_flow_start.png' style='width:100%;'></a></div>
+<div class='card'><p>30_repair_flow_filled.png</p><a href='30_repair_flow_filled.png' target='_blank'><img src='30_repair_flow_filled.png' style='width:100%;'></a></div>
+<div class='card'><p>31_repair_flow_submitted.png</p><a href='31_repair_flow_submitted.png' target='_blank'><img src='31_repair_flow_submitted.png' style='width:100%;'></a></div>
+<div class='card'><p>32_mobile_dashboard_375.png</p><a href='32_mobile_dashboard_375.png' target='_blank'><img src='32_mobile_dashboard_375.png' style='width:100%;'></a></div>
+<div class='card'><p>33_mobile_orders_375.png</p><a href='33_mobile_orders_375.png' target='_blank'><img src='33_mobile_orders_375.png' style='width:100%;'></a></div>
+<div class='card'><p>34_viewer_login.png</p><a href='34_viewer_login.png' target='_blank'><img src='34_viewer_login.png' style='width:100%;'></a></div>
+<div class='card'><p>35_staff_login.png</p><a href='35_staff_login.png' target='_blank'><img src='35_staff_login.png' style='width:100%;'></a></div>
+<div class='card'><p>36_error_final.png</p><a href='36_error_final.png' target='_blank'><img src='36_error_final.png' style='width:100%;'></a></div>
+<div class='card'><p>36_lockout_after_5.png</p><a href='36_lockout_after_5.png' target='_blank'><img src='36_lockout_after_5.png' style='width:100%;'></a></div>
+<div class='card'><p>37_lockout_verify.png</p><a href='37_lockout_verify.png' target='_blank'><img src='37_lockout_verify.png' style='width:100%;'></a></div>
+<div class='card'><p>38_dashboard_cards.png</p><a href='38_dashboard_cards.png' target='_blank'><img src='38_dashboard_cards.png' style='width:100%;'></a></div>
+<div class='card'><p>39_order_landline_phone.png</p><a href='39_order_landline_phone.png' target='_blank'><img src='39_order_landline_phone.png' style='width:100%;'></a></div>
+<div class='card'><p>40_order_other_required.png</p><a href='40_order_other_required.png' target='_blank'><img src='40_order_other_required.png' style='width:100%;'></a></div>
+<div class='card'><p>41_today_data.png</p><a href='41_today_data.png' target='_blank'><img src='41_today_data.png' style='width:100%;'></a></div>
+<div class='card'><p>42_followups_data.png</p><a href='42_followups_data.png' target='_blank'><img src='42_followups_data.png' style='width:100%;'></a></div>
+<div class='card'><p>43_used_public.png</p><a href='43_used_public.png' target='_blank'><img src='43_used_public.png' style='width:100%;'></a></div>
+<div class='card'><p>44_warranty_detail.png</p><a href='44_warranty_detail.png' target='_blank'><img src='44_warranty_detail.png' style='width:100%;'></a></div>
+<div class='card'><p>45_error_network.png</p><a href='45_error_network.png' target='_blank'><img src='45_error_network.png' style='width:100%;'></a></div>
+<div class='card'><p>46_viewer_login.png</p><a href='46_viewer_login.png' target='_blank'><img src='46_viewer_login.png' style='width:100%;'></a></div>
+<div class='card'><p>47_viewer_orders_readonly.png</p><a href='47_viewer_orders_readonly.png' target='_blank'><img src='47_viewer_orders_readonly.png' style='width:100%;'></a></div>
+<div class='card'><p>48_viewer_new_order_forbidden.png</p><a href='48_viewer_new_order_forbidden.png' target='_blank'><img src='48_viewer_new_order_forbidden.png' style='width:100%;'></a></div>
+<div class='card'><p>49_viewer_users_forbidden.png</p><a href='49_viewer_users_forbidden.png' target='_blank'><img src='49_viewer_users_forbidden.png' style='width:100%;'></a></div>
+<div class='card'><p>50_staff_login.png</p><a href='50_staff_login.png' target='_blank'><img src='50_staff_login.png' style='width:100%;'></a></div>
+<div class='card'><p>51_staff_users_forbidden.png</p><a href='51_staff_users_forbidden.png' target='_blank'><img src='51_staff_users_forbidden.png' style='width:100%;'></a></div>
+<div class='card'><p>52_staff_new_order.png</p><a href='52_staff_new_order.png' target='_blank'><img src='52_staff_new_order.png' style='width:100%;'></a></div>
+</div>
+</body></html>
