@@ -18,3 +18,7 @@ Existing login tokens without `pwdv` are invalidated by upgrade. Staff must log 
 - Per-process in-memory rate limiter and login lockout cannot coordinate across multiple workers.
 - Concurrent order number generation may collide on high contention; transaction-aware allocator still needed.
 - Restore test of complete database + uploads backup is a separate operational gate.
+
+## Follow-up: PR #8 / Issue #7
+
+The independent post-merge review found a regression introduced in PR #6: the image collision branch referenced removed `BASE_DIR`, causing HTTP 500. Added a red/green end-to-end test for an existing destination and a non-default upload root. **Red:** 9 passed, 1 failed (`500`); **green:** backend + frontend CI passed after replacing the legacy reference with `get_uploads_dir()`. This issue is tracked separately from #1–#5 and must be closed only by PR #8 merge.

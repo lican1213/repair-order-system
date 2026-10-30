@@ -213,7 +213,7 @@ def submit_repair(req: RepairSubmitRequest, request: Request, db: Session = Depe
         # 防止文件名冲突
         if final_file.exists():
             filename = secrets.token_urlsafe(16) + temp_file.suffix
-            final_file = BASE_DIR / "uploads" / "orders" / filename
+            final_file = get_uploads_dir() / "orders" / filename
 
         shutil.move(str(temp_file), str(final_file))
         moved_files.append((temp_file, final_file))
