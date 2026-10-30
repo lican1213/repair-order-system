@@ -141,3 +141,10 @@ v1.0 全部 12 个 Phase 通过。Codex 独立审计结论：**PASS_WITH_FIXES**
 - 新增 `backend/tests/test_adversarial.py`、`test_http_adversarial.py`、`test_backup.py` 以及持续集成 `.github/workflows/ci.yml`。
 - GitHub Actions 已执行两轮前后端通过（含第二轮 HTTP 对抗回归）；合并后需关注 `main` 检查结果。
 - 改进点与残余风险见 `docs/ADVERSARIAL_AUDIT_2026-10-30.md`；下一步真机验收、配置和恢复演练未完成，不计入线上通过。
+
+
+## 2026-10-30 二次复核
+
+- 检查主分支 #6 的 CI 与代码时发现新回归：文件名冲突分支使用已删除的 `BASE_DIR`。
+- Issue #7 / PR #8：增加真实 HTTP 重名路径测试，先红灯（9 通过 / 1 失败），后修复并通过双 CI。
+- 既有客户照片保留，新照片按随机文件名保存在配置上传根目录；对应测试纳入持久 CI。

@@ -32,3 +32,9 @@ This map is the entry point for developers and agents. Preserve the small-shop s
 - Public rate limiter and auth lockout are in-memory; multi-worker isolation.
 - Concurrent order-number allocation / >999 daily sequence edge.
 - Real-phone and production restore drills not executed by CI.
+
+## 2026-10-30 follow-up audit
+
+- PR #8 / Issue #7: collision fallback retained an undefined `BASE_DIR` after #6; exact repro: the destination filename already exists.
+- HTTP red/green test: `test_collision_preserves_original_and_uses_configured_upload_root`; preserves existing file and saves renamed new image under configured `UPLOAD_DIR`.
+- Review rule: always test branch paths introduced by refactoring imports or paths, not just the default happy path.
