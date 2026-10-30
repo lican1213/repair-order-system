@@ -169,11 +169,21 @@ def update_order(
             detail=f"无效的回访状态: {req.followup_status}",
         )
 
+    # Reject newly-changed past appointments, not unchanged historical values.
+    if req.scheduled_at is not None:
+        new_at = req.scheduled_at.replace(tzinfo=None)
+        old_at = order.scheduled_at.replace(tzinfo=None) if order.scheduled_at else None
+        if new_at != old_at and new_at < datetime.now():
+            raise HTTPException(status_code=422, detail="预约时间不能早于当前时间")
+    if req.warranty_until and req.warranty_until != order.warranty_until:
+        if date.fromisoformat(req.warranty_until) < date.today():
+            raise HTTPException(status_code=422, detail="保修截止日期不能选择过去日期")
+
     # 记录旧状态
     old_status = order.status
 
     # warranty_until 不能早于 completed_at
-    if req.warranty_until:
+    if req.warranty_until and (req.warranty_until != order.warranty_until or req.completed_at):
         completed_date = None
         if req.completed_at:
             completed_date = req.completed_at.date()

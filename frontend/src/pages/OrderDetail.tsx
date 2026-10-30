@@ -51,19 +51,19 @@ export default function OrderDetail() {
   // 实时校验日期字段（纯派生，用 useMemo）
   const dateErrors = useMemo<Record<string, string>>(() => {
     const errs: Record<string, string> = {}
-    if (form.scheduled_at && isPastDateTime(form.scheduled_at)) {
+    if (form.scheduled_at && form.scheduled_at !== order?.scheduled_at?.slice(0, 16) && isPastDateTime(form.scheduled_at)) {
       errs.scheduled_at = '预约时间不能早于当前时间'
     }
     if (form.completed_at && isPastDateTime(form.completed_at as unknown as string)) {
       errs.completed_at = '完成时间不能早于当前时间'
     }
-    const warrantyErr = validateWarrantyDate(
+    const warrantyErr = form.warranty_until === (order?.warranty_until || '') ? null : validateWarrantyDate(
       form.warranty_until || '',
       form.completed_at as unknown as string || order?.completed_at
     )
     if (warrantyErr) errs.warranty_until = warrantyErr
     return errs
-  }, [form.scheduled_at, form.completed_at, form.warranty_until, order?.completed_at])
+  }, [form.scheduled_at, form.completed_at, form.warranty_until, order?.scheduled_at, order?.warranty_until, order?.completed_at])
 
   const update = (field: string, value: string | number | undefined) => {
     setForm((prev) => ({ ...prev, [field]: value }))
