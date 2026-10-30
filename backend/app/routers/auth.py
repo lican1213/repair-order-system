@@ -8,7 +8,7 @@ from app.auth import (
     clear_login_failures,
     create_access_token,
     get_current_user,
-    hash_password,
+    password_token_version,
     record_login_failure,
     verify_password,
 )
@@ -57,7 +57,7 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
     db.commit()
 
     # 生成 token
-    token = create_access_token(data={"sub": str(user.id)})
+    token = create_access_token(data={"sub": str(user.id), "pwdv": password_token_version(user.password_hash)})
     return TokenResponse(access_token=token)
 
 

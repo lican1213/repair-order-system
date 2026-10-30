@@ -38,3 +38,9 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+def get_uploads_dir() -> Path:
+    """Use the same canonical upload root for static hosting and upload APIs."""
+    path = Path(settings.UPLOAD_DIR)
+    return (path if path.is_absolute() else BASE_DIR / path).resolve()

@@ -11,6 +11,8 @@ Usage:
 """
 
 import argparse
+import sqlite3
+from contextlib import closing
 import shutil
 import sys
 import zipfile
@@ -92,15 +94,25 @@ def check_disk_space(required_bytes: int) -> None:
         sys.exit(1)
 
 
+def backup_sqlite_db(source: Path, destination: Path) -> None:
+    """SQLite online backup API includes committed WAL transactions."""
+    with closing(sqlite3.connect(str(source))) as src:
+        with closing(sqlite3.connect(str(destination))) as dst:
+            src.backup(dst)
+            result = dst.execute("PRAGMA quick_check").fetchone()[0]
+            if result != "ok":
+                raise RuntimeError(f"SQLite backup integrity check failed: {result}")
+
+
 def run_backup() -> Path:
     """Copy database and uploads to a timestamped backup directory."""
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     backup_dir = BACKUPS_DIR / timestamp
     backup_dir.mkdir(parents=True, exist_ok=True)
 
     # Copy database
     db_dest = backup_dir / "repair.db"
-    shutil.copy2(str(DB_PATH), str(db_dest))
+    backup_sqlite_db(DB_PATH, db_dest)
     print(f"  Copied database -> {db_dest.name}")
 
     # Copy uploads directory
@@ -170,6 +182,8 @@ def main() -> None:
         help="Number of recent backups to retain (default: 7)",
     )
     args = parser.parse_args()
+    if args.keep < 1:
+        parser.error("--keep must be at least 1")
 
     print("Repair Order System - Backup")
     print("=" * 40)

@@ -211,19 +211,12 @@ class OrderUpdateRequest(BaseModel):
 
     @model_validator(mode="after")
     def validate_dates(self):
-        now = datetime.now()
-        if self.scheduled_at and self.scheduled_at < now:
-            raise ValueError("预约时间不能早于当前时间")
-        if self.completed_at and self.completed_at < now:
-            raise ValueError("完成时间不能早于当前时间")
+        # Existing historical dates must be editable; the router checks only changes.
         if self.warranty_until:
             try:
-                wdate = date.fromisoformat(self.warranty_until)
-                if wdate < date.today():
-                    raise ValueError("保修截止日期不能选择过去日期")
-            except ValueError as e:
-                if "保修" in str(e):
-                    raise
+                date.fromisoformat(self.warranty_until)
+            except ValueError:
+                raise ValueError("保修截止日期必须是 YYYY-MM-DD") from None
         return self
 
 

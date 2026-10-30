@@ -45,6 +45,8 @@ def _format_cell(value):
         return ""
     if isinstance(value, datetime):
         return value.strftime("%Y-%m-%d %H:%M:%S")
+    if isinstance(value, str) and value.lstrip(" \t\r\n").startswith(("=", "+", "-", "@")):
+        return "'" + value
     return value
 
 

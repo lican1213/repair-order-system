@@ -137,3 +137,8 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 - 不做：AI 客服、AI 诊断、AI 报价、在线支付、会员、商城、复杂库存、多员工、微信小程序
 - 状态枚举集中管理在 `constants.py` / `constants.ts`
 - 公开保修接口只返回公开字段，不暴露客户隐私
+
+
+## 2026-10-30 Maintenance
+
+New primary knowledge index: `docs/MOC.md`. Adversarial security audit and regression gates: `docs/ADVERSARIAL_AUDIT_2026-10-30.md`, `backend/tests/`, `.github/workflows/ci.yml`. Historical notes D-003/D-055 are superseded by D-064/D-065; operational deployment and real-device acceptance remain separate from CI.

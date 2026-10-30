@@ -116,3 +116,11 @@ curl https://your-domain.com/api/health
 ```json
 {"status":"ok"}
 ```
+
+
+## 7. 2026-10-30 安全补丁部署核验
+
+- 升级后旧 JWT 自动失效。管理员须重新登录；修改密码后旧设备的 token 不能继续调用后台 API。
+- FastAPI 继续仅监听 `127.0.0.1`，不要向公网开放 8000。Uvicorn 应只信任反向代理的转发头（默认 `127.0.0.1`）；不可设置 `--forwarded-allow-ips '*'` 直接暴露服务。
+- `scripts/backup.py` 现采用 SQLite online backup API；上线前执行一次备份并用 SQLite `PRAGMA integrity_check` 检查还原后的数据库，确认至少一张实际订单可见，同时核对 uploads 图片目录。
+- 运行 `python -m pytest -q backend/tests` 需设置 `PYTHONPATH=backend:.`；`frontend/npm run lint && npm run build` 由 GitHub Actions 执行。

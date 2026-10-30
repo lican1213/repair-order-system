@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta, timezone
+import hashlib
+import hmac
 
 import bcrypt
 from fastapi import Depends, HTTPException, status
@@ -28,6 +30,11 @@ def hash_password(password: str) -> str:
 def verify_password(plain_password: str, password_hash: str) -> bool:
     """验证密码。"""
     return bcrypt.checkpw(plain_password.encode(), password_hash.encode())
+
+
+def password_token_version(password_hash: str) -> str:
+    """Bind a JWT to the current password without storing another DB column."""
+    return hmac.new(settings.SECRET_KEY.encode(), password_hash.encode(), hashlib.sha256).hexdigest()
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
@@ -95,7 +102,11 @@ def get_current_user(
             detail="无效的认证凭据",
         )
 
-    user = db.query(User).filter(User.id == int(user_id)).first()
+    try:
+        user_id = int(user_id)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=401, detail="无效的认证凭据") from None
+    user = db.query(User).filter(User.id == user_id).first()
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -106,4 +117,9 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="用户已被禁用",
         )
+    token_version = payload.get("pwdv")
+    if not isinstance(token_version, str) or not hmac.compare_digest(
+        token_version, password_token_version(user.password_hash)
+    ):
+        raise HTTPException(status_code=401, detail="登录凭证已失效，请重新登录")
     return user

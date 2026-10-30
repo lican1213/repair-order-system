@@ -5,20 +5,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.config import settings, BASE_DIR
+from app.config import settings, BASE_DIR, get_uploads_dir
 from app.database import SessionLocal, init_db
 
 app = FastAPI(title="家电维修工单系统", version="1.0.0")
 
 
-def _resolve_uploads_dir() -> Path:
-    uploads_dir = Path(settings.UPLOAD_DIR)
-    if not uploads_dir.is_absolute():
-        uploads_dir = BASE_DIR / uploads_dir
-    return uploads_dir
-
-
-UPLOADS_DIR = _resolve_uploads_dir()
+UPLOADS_DIR = get_uploads_dir()
 STATIC_DIR = BASE_DIR / "app" / "static"
 
 # CORS - 开发环境仅允许 localhost:5173
@@ -123,8 +116,8 @@ async def spa_fallback(request: Request, call_next):
         return await call_next(request)
 
     # 尝试查找静态文件
-    file_path = STATIC_DIR / path.lstrip("/")
-    if file_path.is_file():
+    file_path = (STATIC_DIR / path.lstrip("/")).resolve()
+    if file_path.is_relative_to(STATIC_DIR.resolve()) and file_path.is_file():
         return FileResponse(str(file_path))
 
     # 返回 index.html (SPA fallback)
