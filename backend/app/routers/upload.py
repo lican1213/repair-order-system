@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.auth import get_current_user
-from app.config import settings, BASE_DIR
+from app.config import settings, get_uploads_dir
 from app.database import get_db
 from app.models import User
 from app.schemas import PublicUploadResponse
@@ -32,7 +32,7 @@ async def upload_repair_images(
             detail=f"最多上传 {MAX_FILES} 张图片",
         )
 
-    orders_dir = BASE_DIR / "uploads" / "orders"
+    orders_dir = get_uploads_dir() / "orders"
     orders_dir.mkdir(parents=True, exist_ok=True)
 
     saved_paths = []
@@ -53,7 +53,7 @@ async def upload_repair_images(
             )
 
         # 读取文件内容并校验大小
-        content = await file.read()
+        content = await file.read(MAX_FILE_SIZE + 1)
         if len(content) > MAX_FILE_SIZE:
             raise HTTPException(
                 status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,

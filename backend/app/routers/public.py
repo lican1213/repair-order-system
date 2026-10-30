@@ -9,7 +9,8 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, status
 from sqlalchemy.orm import Session
 
-from app.config import settings, BASE_DIR
+from app.config import settings, get_uploads_dir
+from app.image_paths import resolve_staged_image_path
 from app.constants import APPLIANCE_TYPES
 from app.database import get_db
 from app.models import Order
@@ -42,10 +43,7 @@ SUBMIT_PHONE_WINDOW = 600   # 秒 (10 分钟)
 
 
 def _get_client_ip(request: Request) -> str:
-    """Extract client IP, preferring X-Forwarded-For (reverse proxy)."""
-    forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
+    """Use the client IP obtained from ASGI / Uvicorn's trusted proxy handling."""
     return request.client.host if request.client else "unknown"
 
 
@@ -128,7 +126,7 @@ async def upload_images(files: list[UploadFile], request: Request):
             detail=f"最多上传 {MAX_FILES} 张图片",
         )
 
-    temp_dir = BASE_DIR / "uploads" / "orders" / "temp"
+    temp_dir = get_uploads_dir() / "orders" / "temp"
     temp_dir.mkdir(parents=True, exist_ok=True)
 
     saved_paths = []
@@ -149,7 +147,7 @@ async def upload_images(files: list[UploadFile], request: Request):
             )
 
         # 读取文件内容并校验大小
-        content = await file.read()
+        content = await file.read(MAX_FILE_SIZE + 1)
         if len(content) > MAX_FILE_SIZE:
             raise HTTPException(
                 status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
@@ -192,33 +190,25 @@ def submit_repair(req: RepairSubmitRequest, request: Request, db: Session = Depe
             detail=f"不支持的家电类型: {req.appliance_type}",
         )
 
-    # 校验 image_paths 只能是 temp 目录下的路径
+    # Validate the exact generated basename, not merely the string prefix.
+    if len(req.image_paths) > MAX_FILES or len(set(req.image_paths)) != len(req.image_paths):
+        raise HTTPException(status_code=400, detail="图片数量超限或重复")
     validated_images = []
-    if req.image_paths:
-        for path in req.image_paths:
-            if not path.startswith("/uploads/orders/temp/"):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"无效的图片路径: {path}",
-                )
-            # 检查文件是否存在
-            file_path = BASE_DIR / path.lstrip("/")
-            if not file_path.is_file():
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"图片文件不存在: {path}",
-                )
-            validated_images.append(path)
+    for path in req.image_paths:
+        try:
+            validated_images.append(resolve_staged_image_path(path, get_uploads_dir()))
+        except ValueError:
+            raise HTTPException(status_code=400, detail="无效的图片路径") from None
 
     # 生成工单编号
     order_no = generate_order_no(db)
 
     # 移动图片从 temp 到正式目录
     final_image_paths = []
-    for temp_path in validated_images:
-        temp_file = BASE_DIR / temp_path.lstrip("/")
+    moved_files = []
+    for temp_file in validated_images:
         filename = temp_file.name
-        final_file = BASE_DIR / "uploads" / "orders" / filename
+        final_file = get_uploads_dir() / "orders" / filename
 
         # 防止文件名冲突
         if final_file.exists():
@@ -226,6 +216,7 @@ def submit_repair(req: RepairSubmitRequest, request: Request, db: Session = Depe
             final_file = BASE_DIR / "uploads" / "orders" / filename
 
         shutil.move(str(temp_file), str(final_file))
+        moved_files.append((temp_file, final_file))
         final_image_paths.append(f"/uploads/orders/{filename}")
 
     # 创建订单
@@ -249,8 +240,15 @@ def submit_repair(req: RepairSubmitRequest, request: Request, db: Session = Depe
         location_address=req.location_address,
     )
 
-    db.add(order)
-    db.commit()
+    try:
+        db.add(order)
+        db.commit()
+    except Exception:
+        db.rollback()
+        for source, destination in reversed(moved_files):
+            if destination.exists():
+                shutil.move(str(destination), str(source))
+        raise
 
     return RepairSubmitResponse(
         order_no=order_no,
