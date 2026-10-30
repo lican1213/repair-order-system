@@ -75,3 +75,36 @@ def test_admin_can_edit_old_order_without_rescheduling():
         app.dependency_overrides.pop(get_db, None)
         app.dependency_overrides.pop(get_current_user, None)
         engine.dispose()
+
+
+def test_collision_preserves_original_and_uses_configured_upload_root(tmp_path, monkeypatch):
+    """A pre-existing order image must not trigger a 500 or be overwritten."""
+    import json
+    engine = _setup_db()
+    limiter._records.clear()
+    root = tmp_path / "custom" / "uploads"
+    temp = root / "orders" / "temp"
+    temp.mkdir(parents=True)
+    name = "D" * 22 + ".jpg"
+    destination = root / "orders" / name
+    destination.write_bytes(b"existing-order-image")
+    (temp / name).write_bytes(b"new-customer-image")
+    monkeypatch.setattr(public, "get_uploads_dir", lambda: root)
+    monkeypatch.setattr(public.secrets, "token_urlsafe", lambda n: "E" * 22)
+    payload = {"customer_name": "Test", "phone": "13800138000", "community": "A",
+               "address": "Unit 1", "appliance_type": "空调", "fault_description": "repair",
+               "image_paths": ["/uploads/orders/temp/" + name]}
+    try:
+        with TestClient(app, raise_server_exceptions=False) as client:
+            response = client.post("/api/public/submit", json=payload)
+            assert response.status_code == 200, response.text
+            assert destination.read_bytes() == b"existing-order-image"
+            renamed = root / "orders" / ("E" * 22 + ".jpg")
+            assert renamed.read_bytes() == b"new-customer-image"
+            with Session(engine) as db:
+                saved = db.query(Order).one()
+                assert json.loads(saved.image_paths) == ["/uploads/orders/" + renamed.name]
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+        limiter._records.clear()
+        engine.dispose()
